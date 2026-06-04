@@ -1,1648 +1,813 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Globe, 
-  ShoppingCart, 
-  Settings, 
-  Users, 
-  Search, 
-  CreditCard, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle, 
-  HelpCircle, 
-  Code, 
-  Copy, 
-  Activity, 
+  initializeApp 
+} from 'firebase/app';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  signInWithCustomToken, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  getDocs, 
+  updateDoc 
+} from 'firebase/firestore';
+import { 
+  ShoppingBag, 
+  TrendingUp, 
   DollarSign, 
-  RefreshCw,
-  TrendingUp,
-  Instagram,
-  Youtube,
-  Facebook,
-  Twitter,
-  Flame,
-  ChevronRight,
-  Database,
+  ShieldCheck, 
+  Clock, 
+  User, 
+  Settings, 
+  PlusCircle, 
+  CheckCircle, 
+  XCircle, 
+  RefreshCw, 
+  ArrowRight, 
+  Search, 
+  Sliders, 
+  Lock, 
+  Layers, 
+  Eye, 
   ExternalLink,
-  Lock,
   MessageCircle,
-  FileText,
-  Check,
   QrCode,
-  Sparkles,
-  Eye,
-  ArrowRight,
-  PlusCircle,
-  Trash2,
-  ChevronDown,
-  Percent,
-  RefreshCcw,
-  Zap
+  Copy,
+  Info
 } from 'lucide-react';
 
-// Servicios SMM expandidos y optimizados basados en la API SMM24h
+// --- CONFIGURACIÓN DE FIREBASE (Autodetectada o configurada por el entorno) ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' 
+  ? JSON.parse(__firebase_config) 
+  : {
+      apiKey: "demo-api-key",
+      authDomain: "demo-app.firebaseapp.com",
+      projectId: "demo-app",
+      storageBucket: "demo-app.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1-123456789"
+    };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'smm-reseller-pro-2026';
+
+// --- SERVICIOS POR DEFECTO (Pre-cargados mientras carga la API) ---
 const DEFAULT_SERVICES = [
-  // --- INSTAGRAM ---
-  { service: 101, name: "Instagram Followers [Reales - Alta Calidad]", type: "Default", category: "Instagram - Seguidores", rate: "1.20", min: "50", max: "20000", refill: true, cancel: true, icon: "instagram" },
-  { service: 102, name: "Instagram Likes [Super Rápidos]", type: "Default", category: "Instagram - Likes", rate: "0.45", min: "100", max: "50000", refill: false, cancel: true, icon: "instagram" },
-  { service: 103, name: "Instagram Views - Reels [Virales]", type: "Default", category: "Instagram - Reproducciones", rate: "0.15", min: "500", max: "100000", refill: false, cancel: false, icon: "instagram" },
-  { service: 104, name: "Instagram Comments [Personalizados]", type: "Custom Comments", category: "Instagram - Comentarios", rate: "8.50", min: "10", max: "1500", refill: true, cancel: true, icon: "instagram" },
-  
-  // --- TIKTOK (Catálogo Completo de la API) ---
-  { service: 201, name: "TikTok Followers [Estables - Sin Caídas]", type: "Default", category: "TikTok - Seguidores", rate: "2.10", min: "100", max: "15000", refill: true, cancel: true, icon: "tiktok" },
-  { service: 202, name: "TikTok Likes [Orgánicos y Reales]", type: "Default", category: "TikTok - Likes", rate: "0.95", min: "100", max: "25000", refill: false, cancel: true, icon: "tiktok" },
-  { service: 203, name: "TikTok Views [Entrega Inmediata instantánea]", type: "Default", category: "TikTok - Reproducciones", rate: "0.08", min: "1000", max: "1000000", refill: false, cancel: false, icon: "tiktok" },
-  { service: 204, name: "TikTok Shares [Compartidos para Algoritmo]", type: "Default", category: "TikTok - Compartidos", rate: "0.40", min: "100", max: "50000", refill: true, cancel: false, icon: "tiktok" },
-  { service: 205, name: "TikTok Custom Comments [Comentarios Reales]", type: "Custom Comments", category: "TikTok - Comentarios", rate: "12.00", min: "10", max: "2000", refill: true, cancel: true, icon: "tiktok" },
-  { service: 206, name: "TikTok Saves [Guardados de Publicación]", type: "Default", category: "TikTok - Interacción", rate: "0.55", min: "100", max: "10000", refill: false, cancel: true, icon: "tiktok" },
-
-  // --- YOUTUBE (Catálogo Completo de la API) ---
-  { service: 301, name: "YouTube Views [Alta Retención - No Drop]", type: "Default", category: "YouTube - Vistas", rate: "3.40", min: "500", max: "50000", refill: true, cancel: false, icon: "youtube" },
-  { service: 302, name: "YouTube Subscribers [No-Drop Estables]", type: "Default", category: "YouTube - Suscriptores", rate: "12.50", min: "50", max: "5000", refill: true, cancel: true, icon: "youtube" },
-  { service: 303, name: "YouTube Likes [Super Estables]", type: "Default", category: "YouTube - Likes", rate: "1.80", min: "50", max: "10000", refill: true, cancel: true, icon: "youtube" },
-  { service: 304, name: "YouTube Watch Time [Horas de Reproducción - Monetiza]", type: "Default", category: "YouTube - Horas", rate: "18.50", min: "100", max: "4000", refill: true, cancel: false, icon: "youtube" },
-  { service: 305, name: "YouTube Custom Comments [Comentarios en Español]", type: "Custom Comments", category: "YouTube - Comentarios", rate: "15.00", min: "10", max: "1000", refill: false, cancel: true, icon: "youtube" },
-  { service: 306, name: "YouTube Shares [Compartidos en Redes]", type: "Default", category: "YouTube - Compartidos", rate: "1.25", min: "100", max: "50000", refill: false, cancel: false, icon: "youtube" },
-
-  // --- FACEBOOK (Catálogo Completo de la API) ---
-  { service: 401, name: "Facebook Page Likes + Followers [Estables]", type: "Default", category: "Facebook - Interacción", rate: "2.80", min: "100", max: "15000", refill: true, cancel: true, icon: "facebook" },
-  { service: 402, name: "Facebook Post Likes [Reales de Perfiles]", type: "Default", category: "Facebook - Likes", rate: "0.80", min: "100", max: "10000", refill: false, cancel: true, icon: "facebook" },
-  { service: 403, name: "Facebook Profile Followers [Seguidores de Perfil]", type: "Default", category: "Facebook - Seguidores", rate: "2.40", min: "100", max: "20000", refill: true, cancel: true, icon: "facebook" },
-  { service: 404, name: "Facebook Video Views [Alta Retención AdBreaks]", type: "Default", category: "Facebook - Reproducciones", rate: "1.10", min: "500", max: "100000", refill: false, cancel: false, icon: "facebook" },
-  { service: 405, name: "Facebook Custom Comments [Comentarios Latino / España]", type: "Custom Comments", category: "Facebook - Comentarios", rate: "14.50", min: "10", max: "1000", refill: true, cancel: true, icon: "facebook" },
-  { service: 406, name: "Facebook Group Members [Miembros Públicos]", type: "Default", category: "Facebook - Grupos", rate: "4.90", min: "100", max: "10000", refill: true, cancel: false, icon: "facebook" },
-  { service: 407, name: "Facebook Post Shares [Compartidos de Publicación]", type: "Default", category: "Facebook - Compartidos", rate: "1.65", min: "100", max: "10000", refill: false, cancel: true, icon: "facebook" }
-];
-
-// Palabras clave de alto valor para posicionamiento orgánico (SEO)
-const HIGH_VALUE_KEYWORDS = [
-  { term: "comprar seguidores instagram", volume: "49,500/mes", difficulty: "Media", priority: "Alta" },
-  { term: "comprar seguidores baratos", volume: "22,100/mes", difficulty: "Alta", priority: "Crítica" },
-  { term: "comprar likes instagram paypal", volume: "12,400/mes", difficulty: "Baja", priority: "Alta" },
-  { term: "comprar seguidores tiktok", volume: "18,200/mes", difficulty: "Baja", priority: "Alta" },
-  { term: "comprar visitas youtube", volume: "8,900/mes", difficulty: "Media", priority: "Media" },
-  { term: "comprar me gusta facebook", volume: "5,400/mes", difficulty: "Baja", priority: "Media" }
+  { service: 1, name: "Seguidores de Alta Calidad [Garantizados]", category: "Instagram - Seguidores", rate: "0.90", min: "100", max: "10000", type: "Default" },
+  { service: 2, name: "Likes Reales [Entrega Rápida]", category: "Instagram - Likes", rate: "0.30", min: "50", max: "5000", type: "Default" },
+  { service: 3, name: "Seguidores Orgánicos Latinoamericanos", category: "TikTok - Seguidores", rate: "1.20", min: "100", max: "20000", type: "Default" },
+  { service: 4, name: "Visualizaciones de Alta Retención", category: "TikTok - Vistas", rate: "0.05", min: "500", max: "100000", type: "Default" },
+  { service: 5, name: "Suscriptores Estables [Sin Caída]", category: "YouTube - Suscriptores", rate: "8.50", min: "50", max: "1000", type: "Default" },
+  { service: 6, name: "Likes para Videos", category: "YouTube - Likes", rate: "1.50", min: "100", max: "5000", type: "Default" },
+  { service: 7, name: "Seguidores de Perfil Real", category: "Facebook - Seguidores de Página", rate: "1.80", min: "100", max: "10000", type: "Default" }
 ];
 
 export default function App() {
-  const [apiKey, setApiKey] = useState('cd8c1361406af3d5d6459633f8908b0c'); // Tu API Key por defecto
-  const [markupPercent, setMarkupPercent] = useState(120); // 120% de recargo recomendado
-  const [mode, setMode] = useState('simulation'); 
-  const [proxyUrl, setProxyUrl] = useState(''); 
-  
-  // === CONFIGURACIONES DE PAGOS Y DE MARCA ===
-  const [ownerWhatsapp, setOwnerWhatsapp] = useState('584241682694'); // Tu WhatsApp de cobros por defecto
-  const [paypalEmail, setPaypalEmail] = useState('pagos@comprarseguidoresya.com');
-  const [binancePayId, setBinancePayId] = useState('284905183'); 
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
-  // === ESTADOS PARA SEO CUSTOMIZACIÓN ===
-  const [seoTitle, setSeoTitle] = useState('Comprar Seguidores Ya - Seguidores, Likes y Visitas Baratos');
-  const [seoDescription, setSeoDescription] = useState('La mejor página para comprar seguidores baratos y reales. Entrega garantizada e instantánea en Instagram, TikTok, YouTube y Facebook. Paga seguro con PayPal y Binance.');
-  const [seoDomain, setSeoDomain] = useState('comprarseguidoresya.com');
-
-  // === ESTADOS DE SELECCIÓN DE PAGO Y TIENDA ===
-  const [paymentMethod, setPaymentMethod] = useState('paypal'); 
-  const [activeOrderModal, setActiveOrderModal] = useState(null); 
-  const [cartService, setCartService] = useState(DEFAULT_SERVICES[0]);
-  const [targetLink, setTargetLink] = useState('');
-  const [orderQuantity, setOrderQuantity] = useState(500);
-  const [orderComments, setOrderComments] = useState(''); 
-  
-  // === ESTADOS DE BALANCE DE API SMM24H ===
-  const [providerBalance, setProviderBalance] = useState<string | null>(null);
-  const [balanceLoading, setBalanceLoading] = useState(false);
-
-  // === CALCULADORA INTERACTIVA DE SMM ===
-  const [calcSalesVolume, setCalcSalesVolume] = useState(150); // Órdenes promedio al mes
-
-  // === ESTADO DE ACORDEÓN DE PREGUNTAS ===
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  // Lista inicial de órdenes para simulación interactiva
-  const [ordersList, setOrdersList] = useState([
-    {
-      id: "71240",
-      serviceId: 101,
-      serviceName: "Instagram Followers [Reales - Alta Calidad]",
-      link: "https://instagram.com/cristiano",
-      quantity: 1000,
-      costToOwner: 1.20,
-      chargedToClient: 2.64,
-      paymentMethod: "paypal",
-      status: "Awaiting Payment", 
-      date: "2026-06-04 15:10",
-      remains: "1000",
-      refill: true,
-      cancel: true
-    },
-    {
-      id: "70921",
-      serviceId: 202,
-      serviceName: "TikTok Likes [Orgánicos]",
-      link: "https://tiktok.com/@usuario/video/99",
-      quantity: 500,
-      costToOwner: 0.47,
-      chargedToClient: 1.03,
-      paymentMethod: "binance",
-      status: "In progress",
-      date: "2026-06-03 10:15",
-      remains: "200",
-      refill: false,
-      cancel: true
-    }
-  ]);
-
+  // Estados del Negocio
   const [services, setServices] = useState(DEFAULT_SERVICES);
-  const [selectedPlatform, setSelectedPlatform] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState(null);
-  const [successNotification, setSuccessNotification] = useState(null);
-  const [activeTab, setActiveTab] = useState('store'); 
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [apiBalance, setApiBalance] = useState("0.00");
+  const [isApiConnected, setIsApiConnected] = useState(false);
 
-  const platforms = [
-    { id: 'all', name: 'Todos', color: 'bg-slate-800' },
-    { id: 'instagram', name: 'Instagram', icon: <Instagram className="w-4 h-4" />, color: 'bg-gradient-to-r from-pink-500 to-purple-600' },
-    { id: 'tiktok', name: 'TikTok', icon: <Flame className="w-4 h-4" />, color: 'bg-black' },
-    { id: 'youtube', name: 'YouTube', icon: <Youtube className="w-4 h-4" />, color: 'bg-red-600' },
-    { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-4 h-4" />, color: 'bg-blue-600' }
-  ];
+  // Parámetros de Configuración del Reseller (Guardados en Firebase)
+  const [config, setConfig] = useState({
+    smmApiKey: '',
+    whatsappNumber: '+573000000000', // Reemplazar con tu número
+    markupPercent: 50, // 50% de ganancia por defecto
+    paypalEmail: 'tu-correo@paypal.com',
+    binancePayId: '123456789',
+    adminPin: '1234',
+    corsProxy: 'https://api.allorigins.win/raw?url=' // Proxy para evitar bloqueos CORS en producción Vercel
+  });
 
+  // Interfaz de Usuario
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+  const [activeTab, setActiveTab] = useState('client'); // 'client', 'admin', 'track'
+  
+  // Formulario de Pedido del Cliente
+  const [orderLink, setOrderLink] = useState('');
+  const [orderQuantity, setOrderQuantity] = useState('');
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('paypal');
+  const [orderTrackingId, setOrderTrackingId] = useState('');
+  const [trackedOrder, setTrackedOrder] = useState(null);
+
+  // Modales de Checkout
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [createdOrderDetails, setCreatedOrderDetails] = useState(null);
+
+  // Mostrar mensaje toast temporal
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  // --- 1. CONFIGURACIÓN INICIAL Y AUTENTICACIÓN (REGLA 3) ---
   useEffect(() => {
-    if (cartService) {
-      const minVal = parseInt(cartService.min) || 10;
-      setOrderQuantity(minVal);
-    }
-  }, [cartService]);
-
-  // Sincroniza servicios del proveedor
-  const fetchServices = async () => {
-    setIsLoading(true);
-    setApiError(null);
-    
-    if (mode === 'simulation') {
-      setTimeout(() => {
-        setServices(DEFAULT_SERVICES);
-        setCartService(DEFAULT_SERVICES[0]);
-        setIsLoading(false);
-        showToast("Servicios de simulación optimizados SEO cargados.");
-      }, 600);
-      return;
-    }
-
-    if (!apiKey) {
-      setApiError("Configura la API Key para sincronizar los servicios en vivo.");
-      setIsLoading(false);
-      return;
-    }
-
-    const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-    
-    try {
-      const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('action', 'services');
-
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-      
-      if (Array.isArray(data)) {
-        const mapped = data.map(serv => {
-          let icon = 'instagram';
-          const nameLower = serv.name.toLowerCase();
-          const catLower = serv.category.toLowerCase();
-          if (nameLower.includes('tiktok') || catLower.includes('tiktok')) icon = 'tiktok';
-          else if (nameLower.includes('youtube') || catLower.includes('youtube')) icon = 'youtube';
-          else if (nameLower.includes('facebook') || catLower.includes('facebook')) icon = 'facebook';
-          else if (nameLower.includes('twitter') || nameLower.includes('x ') || catLower.includes('twitter') || catLower.includes('x ')) icon = 'twitter';
-          return { ...serv, icon };
-        });
-        setServices(mapped);
-        if (mapped.length > 0) setCartService(mapped[0]);
-        showToast("¡Servicios SMM reales importados exitosamente!");
-      } else {
-        setApiError("Respuesta de API incorrecta o clave inválida.");
-      }
-    } catch (err) {
-      setApiError("CORS bloqueado. Es necesario que configures el Proxy PHP de la guía.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchServices();
-  }, [mode]);
-
-  // Consultar balance del proveedor
-  const handleFetchBalance = async () => {
-    setBalanceLoading(true);
-    
-    if (mode === 'simulation') {
-      setTimeout(() => {
-        setProviderBalance("100.84");
-        setBalanceLoading(false);
-        showToast("Balance simulado de SMM24h consultado.");
-      }, 500);
-      return;
-    }
-
-    if (!apiKey) {
-      showToast("Establece la clave API para consultar el balance real.");
-      setBalanceLoading(false);
-      return;
-    }
-
-    const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-
-    try {
-      const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('action', 'balance');
-
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (data && data.balance) {
-        setProviderBalance(parseFloat(data.balance).toFixed(2));
-        showToast(`Balance consultado con éxito: $${data.balance} USD`);
-      } else {
-        showToast("No se pudo obtener el balance. Verifica tu clave API.");
-      }
-    } catch (err) {
-      showToast("Fallo de conexión CORS. Utiliza el Proxy PHP de la guía.");
-    } finally {
-      setBalanceLoading(false);
-    }
-  };
-
-  // Solicitar Refill
-  const handleRequestRefill = async (orderId) => {
-    if (mode === 'simulation') {
-      showToast(`¡Solicitud de Refill (Relleno) enviada para la Orden #${orderId}!`);
-      return;
-    }
-
-    if (!apiKey) {
-      showToast("Se requiere la clave API para procesar el refill.");
-      return;
-    }
-
-    const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-
-    try {
-      const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('action', 'refill');
-      formData.append('order', orderId);
-
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (data && data.refill) {
-        showToast(`Garantía activada. ID Refill: ${data.refill}`);
-      } else if (data && data.error) {
-        showToast(`Error de la API: ${data.error}`);
-      } else {
-        showToast("La API rechazó el Refill. El pedido aún está reciente o no es elegible.");
-      }
-    } catch (e) {
-      showToast("Error de comunicación con el Proxy.");
-    }
-  };
-
-  // Solicitar Cancelación
-  const handleRequestCancel = async (orderId) => {
-    if (mode === 'simulation') {
-      const orderIndex = ordersList.findIndex(o => o.id === orderId);
-      if (orderIndex !== -1) {
-        const updatedList = [...ordersList];
-        updatedList[orderIndex].status = "Canceled";
-        setOrdersList(updatedList);
-      }
-      showToast(`¡Solicitud de Cancelación enviada para la Orden #${orderId}!`);
-      return;
-    }
-
-    if (!apiKey) {
-      showToast("Se requiere la clave API para enviar cancelaciones.");
-      return;
-    }
-
-    const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-
-    try {
-      const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('action', 'cancel');
-      formData.append('orders', orderId);
-
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (Array.isArray(data) && data[0] && data[0].cancel === 1) {
-        const orderIndex = ordersList.findIndex(o => o.id === orderId);
-        if (orderIndex !== -1) {
-          const updatedList = [...ordersList];
-          updatedList[orderIndex].status = "Canceled";
-          setOrdersList(updatedList);
-        }
-        showToast(`Orden #${orderId} cancelada exitosamente en el proveedor.`);
-      } else if (Array.isArray(data) && data[0] && data[0].cancel && data[0].cancel.error) {
-        showToast(`No se pudo cancelar: ${data[0].cancel.error}`);
-      } else {
-        showToast("El proveedor denegó la cancelación para este servicio.");
-      }
-    } catch (e) {
-      showToast("Fallo de conexión con el backend.");
-    }
-  };
-
-  const showToast = (msg) => {
-    setSuccessNotification(msg);
-    setTimeout(() => {
-      setSuccessNotification(null);
-    }, 4000);
-  };
-
-  // Copiado al portapapeles con fallback robusto para iframe
-  const copyToClipboard = (text) => {
-    try {
-      const tempInput = document.createElement("textarea");
-      tempInput.value = text;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempInput);
-      showToast("¡Código copiado al portapapeles exitosamente!");
-    } catch (err) {
-      console.error("No se pudo copiar el texto", err);
-    }
-  };
-
-  const filteredServices = useMemo(() => {
-    return services.filter(s => {
-      if (selectedPlatform !== 'all' && s.icon !== selectedPlatform) return false;
-      if (searchTerm) {
-        const query = searchTerm.toLowerCase();
-        return s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query);
-      }
-      return true;
-    });
-  }, [services, selectedPlatform, searchTerm]);
-
-  const calculatePrice = (rate, quantity) => {
-    const originalPrice = (parseFloat(rate) / 1000) * quantity;
-    const addedMarkup = originalPrice * (markupPercent / 100);
-    return {
-      costToOwner: originalPrice,
-      markupAmount: addedMarkup,
-      totalToClient: originalPrice + addedMarkup
-    };
-  };
-
-  const currentPricing = useMemo(() => {
-    if (!cartService) return { costToOwner: 0, markupAmount: 0, totalToClient: 0 };
-    return calculatePrice(cartService.rate, orderQuantity);
-  }, [cartService, orderQuantity, markupPercent]);
-
-  // Enviar orden a la pasarela (WhatsApp Flow)
-  const handleCheckoutSubmit = (e) => {
-    e.preventDefault();
-    if (!targetLink) {
-      showToast("Por favor, introduce el enlace de destino.");
-      return;
-    }
-
-    const { costToOwner, totalToClient } = currentPricing;
-    const simulatedOrderId = Math.floor(Math.random() * 90000) + 10000;
-
-    const newOrder = {
-      id: simulatedOrderId.toString(),
-      serviceId: cartService.service,
-      serviceName: cartService.name,
-      link: targetLink,
-      quantity: orderQuantity,
-      costToOwner: costToOwner,
-      chargedToClient: totalToClient,
-      paymentMethod: paymentMethod,
-      status: "Awaiting Payment",
-      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      remains: orderQuantity.toString(),
-      comments: orderComments,
-      refill: cartService.refill,
-      cancel: cartService.cancel
-    };
-
-    setOrdersList([newOrder, ...ordersList]);
-    setActiveOrderModal(newOrder);
-    setTargetLink('');
-    setOrderComments('');
-  };
-
-  // Creación manual de órden de prueba en el Dashboard
-  const handleCreateMockOrder = () => {
-    const randomService = services[Math.floor(Math.random() * services.length)];
-    const randomQuantity = Math.floor(Math.random() * 1000) + 100;
-    const pricing = calculatePrice(randomService.rate, randomQuantity);
-    const mockId = Math.floor(Math.random() * 90000) + 10000;
-    
-    const mockOrder = {
-      id: mockId.toString(),
-      serviceId: randomService.service,
-      serviceName: randomService.name,
-      link: "https://instagram.com/p/prueba_smm",
-      quantity: randomQuantity,
-      costToOwner: pricing.costToOwner,
-      chargedToClient: pricing.totalToClient,
-      paymentMethod: Math.random() > 0.5 ? 'paypal' : 'binance',
-      status: "Awaiting Payment",
-      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      remains: randomQuantity.toString(),
-      comments: '',
-      refill: randomService.refill,
-      cancel: randomService.cancel
-    };
-
-    setOrdersList([mockOrder, ...ordersList]);
-    showToast(`Orden demo #${mockId} añadida para revisión de pago.`);
-  };
-
-  // Elimar órden de la simulación
-  const handleDeleteOrder = (orderId) => {
-    setOrdersList(ordersList.filter(o => o.id !== orderId));
-    showToast(`Orden #${orderId} eliminada.`);
-  };
-
-  const getWhatsAppLink = (order) => {
-    const totalString = parseFloat(order.chargedToClient).toFixed(2);
-    const methodNice = order.paymentMethod === 'paypal' ? 'PayPal' : 'Binance Pay';
-    const text = `Hola! Vengo de la web y acabo de realizar una solicitud de orden.
------------------------------
-📌 ORDEN ID: #${order.id}
-👉 SERVICIO: ${order.serviceName}
-📉 CANTIDAD: ${order.quantity}
-🔗 ENLACE: ${order.link}
-💰 TOTAL A PAGAR: $${totalString} USD
-💳 MÉTODO DE PAGO: ${methodNice}
------------------------------
-Aquí tengo mi captura de pantalla del pago. ¡Espero tu confirmación para activarla!`;
-    
-    return `https://api.whatsapp.com/send?phone=${ownerWhatsapp}&text=${encodeURIComponent(text)}`;
-  };
-
-  // Activa la orden real contra la API de SMM24h o simula su transición
-  const handleActivateOrder = async (orderId) => {
-    const orderIndex = ordersList.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) return;
-
-    const order = ordersList[orderIndex];
-    setIsLoading(true);
-
-    if (mode === 'simulation') {
-      setTimeout(() => {
-        const updatedList = [...ordersList];
-        updatedList[orderIndex].status = "Pending";
-        setOrdersList(updatedList);
-        setIsLoading(false);
-        showToast(`¡Orden #${orderId} activada en el sistema de forma exitosa!`);
-      }, 800);
-    } else {
-      if (!apiKey) {
-        showToast("Falta configurar la API Key de SMM24H para procesar órdenes reales.");
-        setIsLoading(false);
-        return;
-      }
-
-      const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-
+    const initAuth = async () => {
       try {
-        const formData = new FormData();
-        formData.append('key', apiKey);
-        formData.append('action', 'add');
-        formData.append('service', order.serviceId);
-        formData.append('link', order.link);
-        formData.append('quantity', order.quantity);
-        if (order.comments) {
-          formData.append('comments', order.comments);
-        }
-
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.order) {
-          const updatedList = [...ordersList];
-          updatedList[orderIndex].id = data.order.toString(); 
-          updatedList[orderIndex].status = "In progress";
-          setOrdersList(updatedList);
-          showToast(`¡Excelente! Orden enviada a SMM24h. ID Real: #${data.order}`);
-        } else if (data.error) {
-          showToast(`Error del API SMM24h: ${data.error}`);
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
         }
       } catch (err) {
-        showToast("Fallo de conexión. ¿Ya creaste tu proxy de evitación CORS?");
-      } finally {
-        setIsLoading(false);
+        console.error("Auth Error:", err);
+        showToast("Error en la conexión segura inicial.", "error");
       }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (usr) => {
+      setUser(usr);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // --- 2. CARGA DE CONFIGURACIÓN Y ÓRDENES (REGLA 1 & 2) ---
+  useEffect(() => {
+    if (!user) return;
+    loadConfig();
+    loadOrders();
+  }, [user]);
+
+  // Cada vez que cambia la lista de servicios, recalculamos las categorías únicas
+  useEffect(() => {
+    const uniqueCategories = [...new Set(services.map(s => s.category))];
+    setCategories(uniqueCategories);
+    if (uniqueCategories.length > 0 && !selectedCategory) {
+      setSelectedCategory(uniqueCategories[0]);
+    }
+  }, [services]);
+
+  // Cada vez que cambia la cantidad de pedido o el servicio seleccionado, se calcula el precio
+  useEffect(() => {
+    if (selectedService && orderQuantity) {
+      const qty = parseInt(orderQuantity, 10);
+      if (!isNaN(qty)) {
+        const ratePerThousand = parseFloat(selectedService.rate);
+        const basePrice = (ratePerThousand / 1000) * qty;
+        const finalPrice = basePrice * (1 + config.markupPercent / 100);
+        setCalculatedPrice(parseFloat(finalPrice.toFixed(2)));
+      } else {
+        setCalculatedPrice(0);
+      }
+    } else {
+      setCalculatedPrice(0);
+    }
+  }, [selectedService, orderQuantity, config.markupPercent]);
+
+  // Cargar configuración de base de datos pública
+  const loadConfig = async () => {
+    try {
+      const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main');
+      const configSnap = await getDoc(configDocRef);
+      if (configSnap.exists()) {
+        const data = configSnap.data();
+        setConfig(prev => ({ ...prev, ...data }));
+        // Si tenemos la API Key guardada, intentamos cargar los servicios en tiempo real
+        if (data.smmApiKey) {
+          fetchServicesFromApi(data.smmApiKey, data.corsProxy);
+          fetchBalanceFromApi(data.smmApiKey, data.corsProxy);
+        }
+      } else {
+        // Inicializar configuración por defecto si no existe
+        await setDoc(configDocRef, config);
+      }
+    } catch (e) {
+      console.error("Error loading config:", e);
     }
   };
 
-  const getActivationNotificationLink = (order) => {
-    const text = `¡Hola! Tu pago para la Orden #${order.id} ha sido verificado correctamente en nuestra cuenta.
-Ya hemos activado el pedido de forma automatizada en nuestros servidores. Comenzarás a recibir el servicio en breve. ¡Muchas gracias por elegir ComprarSeguidoresYa!`;
-    return `https://api.whatsapp.com/send?phone=${ownerWhatsapp}&text=${encodeURIComponent(text)}`;
+  // Cargar órdenes desde Firestore (Regla 2: Solo consulta básica)
+  const loadOrders = async () => {
+    try {
+      const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+      const snap = await getDocs(ordersColRef);
+      const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Ordenar en memoria (Regla 2)
+      list.sort((a, b) => b.createdAt - a.createdAt);
+      setOrders(list);
+    } catch (e) {
+      console.error("Error loading orders:", e);
+    }
   };
 
-  const handleRefreshStatus = async (orderId) => {
-    const orderIndex = ordersList.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) return;
+  // --- 3. CONEXIÓN CON SMM24H API ---
+  const fetchServicesFromApi = async (key, proxy) => {
+    if (!key) return;
+    try {
+      const targetUrl = `https://smm24h.com/api/v2?key=${key}&action=services`;
+      const url = proxy ? `${proxy}${encodeURIComponent(targetUrl)}` : targetUrl;
+      
+      const response = await fetch(url, { method: 'POST' });
+      if (!response.ok) throw new Error("API Connection Failed");
+      const data = await response.json();
+      
+      if (Array.isArray(data) && data.length > 0) {
+        setServices(data);
+        setIsApiConnected(true);
+      } else if (data.error) {
+        console.warn("API Error:", data.error);
+        setIsApiConnected(false);
+      }
+    } catch (err) {
+      console.error("CORS limit or API issue. Using backup mock/previous services list.", err);
+      setIsApiConnected(false);
+    }
+  };
 
-    if (ordersList[orderIndex].status === 'Awaiting Payment') {
-      showToast("Este pedido aún está esperando la confirmación de pago por WhatsApp.");
+  const fetchBalanceFromApi = async (key, proxy) => {
+    if (!key) return;
+    try {
+      const targetUrl = `https://smm24h.com/api/v2?key=${key}&action=balance`;
+      const url = proxy ? `${proxy}${encodeURIComponent(targetUrl)}` : targetUrl;
+      
+      const response = await fetch(url, { method: 'POST' });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data && data.balance) {
+        setApiBalance(`${parseFloat(data.balance).toFixed(2)} ${data.currency || 'USD'}`);
+      }
+    } catch (err) {
+      console.error("Balance fetch failed", err);
+    }
+  };
+
+  // Guardar configuración del Administrador
+  const handleSaveConfig = async (e) => {
+    e.preventDefault();
+    try {
+      const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main');
+      await setDoc(configDocRef, config);
+      showToast("Configuración guardada de manera segura", "success");
+      // Recargar datos actualizados
+      fetchServicesFromApi(config.smmApiKey, config.corsProxy);
+      fetchBalanceFromApi(config.smmApiKey, config.corsProxy);
+    } catch (err) {
+      showToast("No se pudo guardar la configuración", "error");
+    }
+  };
+
+  // --- 4. ACCIÓN DE COMPRA DEL CLIENTE ---
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+    if (!selectedService) {
+      showToast("Por favor selecciona un servicio", "error");
+      return;
+    }
+    const qty = parseInt(orderQuantity, 10);
+    const minLimit = parseInt(selectedService.min, 10);
+    const maxLimit = parseInt(selectedService.max, 10);
+
+    if (isNaN(qty) || qty < minLimit || qty > maxLimit) {
+      showToast(`La cantidad debe estar entre ${minLimit} y ${maxLimit}`, "error");
       return;
     }
 
-    if (mode === 'simulation') {
-      const statuses = ["Pending", "In progress", "Completed"];
-      const currentIdx = statuses.indexOf(ordersList[orderIndex].status);
-      const nextStatus = currentIdx < statuses.length - 1 ? statuses[currentIdx + 1] : "Completed";
+    if (!orderLink.trim()) {
+      showToast("Ingresa la dirección URL o usuario de destino", "error");
+      return;
+    }
+
+    const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+    const costPrice = (parseFloat(selectedService.rate) / 1000) * qty;
+
+    const newOrder = {
+      orderId: orderId,
+      serviceId: selectedService.service,
+      serviceName: selectedService.name,
+      category: selectedService.category,
+      link: orderLink,
+      quantity: qty,
+      costPrice: costPrice,
+      sellPrice: calculatedPrice,
+      paymentMethod: paymentMethod,
+      status: 'pending_payment', // 'pending_payment', 'processing', 'completed', 'failed'
+      createdAt: Date.now(),
+      providerOrderId: null,
+      providerStatus: 'Aún no enviado a proveedor'
+    };
+
+    try {
+      // Guardar en Firestore pública (Regla 1)
+      const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
+      await setDoc(orderDocRef, newOrder);
       
-      const updated = [...ordersList];
-      updated[orderIndex].status = nextStatus;
-      if (nextStatus === 'Completed') updated[orderIndex].remains = "0";
-      setOrdersList(updated);
-      showToast(`Estado de la orden #${orderId} avanzado localmente.`);
-    } else {
-      if (!apiKey) return;
-      const targetUrl = proxyUrl ? proxyUrl : "https://smm24h.com/api/v2";
-
-      try {
-        const formData = new FormData();
-        formData.append('key', apiKey);
-        formData.append('action', 'status');
-        formData.append('order', orderId);
-
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.status) {
-          const updated = [...ordersList];
-          updated[orderIndex].status = data.status;
-          updated[orderIndex].remains = data.remains;
-          setOrdersList(updated);
-          showToast(`Estado de la orden #${orderId} actualizado.`);
-        }
-      } catch (e) {
-        showToast("Error de conexión al consultar.");
-      }
+      setCreatedOrderDetails(newOrder);
+      setShowCheckoutModal(true);
+      
+      // Añadir localmente al inicio de la lista
+      setOrders(prev => [newOrder, ...prev]);
+      
+      showToast("¡Orden creada! Procede con el pago para activarla.", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Error al procesar la orden en el servidor.", "error");
     }
   };
 
-  const adminStats = useMemo(() => {
-    let totalInversor = 0; 
-    let totalVendido = 0;   
-    let pendientes = 0;
+  // Redirección directa a WhatsApp con formato premium de Factura
+  const handleConfirmOnWhatsApp = () => {
+    if (!createdOrderDetails) return;
+    
+    const cleanPhone = config.whatsappNumber.replace(/[^0-9+]/g, '');
+    const message = `*¡HOLA! QUIERO CONFIRMAR MI PAGO SMM*%0A` +
+                    `-------------------------------------------%0A` +
+                    `📝 *Orden ID:* \`${createdOrderDetails.orderId}\`%0A` +
+                    `📦 *Servicio:* ${createdOrderDetails.serviceName}%0A` +
+                    `🔗 *Enlace:* ${createdOrderDetails.link}%0A` +
+                    `🔢 *Cantidad:* ${createdOrderDetails.quantity}%0A` +
+                    `💰 *Monto a Pagar:* $${createdOrderDetails.sellPrice.toFixed(2)} USD%0A` +
+                    `💳 *Método de Pago:* ${createdOrderDetails.paymentMethod.toUpperCase()}%0A` +
+                    `-------------------------------------------%0A` +
+                    `*Nota:* Adjunto el comprobante de pago para la activación de mi servicio.`;
 
-    ordersList.forEach(order => {
-      if (order.status !== 'Awaiting Payment') {
-        totalInversor += order.costToOwner;
-        totalVendido += order.chargedToClient;
-      } else {
-        pendientes++;
-      }
-    });
+    const waUrl = `https://wa.me/${cleanPhone}?text=${message}`;
+    window.open(waUrl, '_blank');
+    setShowCheckoutModal(false);
+    
+    // Limpiar formulario cliente
+    setOrderLink('');
+    setOrderQuantity('');
+    setSelectedService(null);
+  };
 
-    return {
-      totalInversor: totalInversor.toFixed(2),
-      totalVendido: totalVendido.toFixed(2),
-      gananciasNetas: (totalVendido - totalInversor).toFixed(2),
-      pedidosTotales: ordersList.length,
-      pendientes
-    };
-  }, [ordersList]);
-
-  // FAQ estático para la pestaña de Tienda
-  const faqData = [
-    {
-      q: "¿Cuánto tiempo tarda en llegar mi pedido?",
-      a: "La mayoría de nuestros servicios SMM se inician de forma inmediata tras verificar el pago (1-10 minutos). El tiempo de finalización varía según la cantidad comprada."
-    },
-    {
-      q: "¿Hay riesgo de que cierren mi cuenta de Redes Sociales?",
-      a: "No. Utilizamos perfiles de alta calidad y metodologías de entrega que cumplen perfectamente con las directrices de seguridad de Instagram, TikTok y YouTube."
-    },
-    {
-      q: "¿Cómo se procesan los pagos?",
-      a: "Puedes pagar de forma 100% segura mediante PayPal o Binance Pay. Al rellenar tu pedido, recibirás los datos de cobro y podrás enviarnos el comprobante por WhatsApp con un solo clic."
-    },
-    {
-      q: "¿Qué significa que un servicio tenga 'Garantía de Refill'?",
-      a: "Significa que si experimentas una caída de seguidores o likes en el tiempo garantizado, el sistema rellenará de forma automática y gratuita la cantidad perdida."
+  // --- 5. BÚSQUEDA Y SEGUIMIENTO DE ORDENES POR EL CLIENTE ---
+  const handleTrackOrder = (e) => {
+    e.preventDefault();
+    if (!orderTrackingId.trim()) {
+      showToast("Ingresa un ID de Orden válido", "error");
+      return;
     }
-  ];
+    const cleanId = orderTrackingId.trim().toUpperCase();
+    const found = orders.find(o => o.orderId === cleanId);
+    if (found) {
+      setTrackedOrder(found);
+    } else {
+      setTrackedOrder(null);
+      showToast("No se encontró ninguna orden con ese identificador.", "error");
+    }
+  };
+
+  // --- 6. PANEL ADMIN - APROBACIÓN DE PEDIDO Y ENVÍO AUTOMÁTICO A SMM24H ---
+  const handleApproveOrder = async (orderToApprove) => {
+    if (!config.smmApiKey) {
+      showToast("Debes ingresar y guardar tu API Key de SMM24h primero.", "error");
+      return;
+    }
+
+    try {
+      showToast(`Procesando orden ${orderToApprove.orderId}...`, "info");
+      
+      // URL del Endpoint para Añadir Pedidos SMM24h
+      const targetUrl = `https://smm24h.com/api/v2?key=${config.smmApiKey}&action=add&service=${orderToApprove.serviceId}&link=${encodeURIComponent(orderToApprove.link)}&quantity=${orderToApprove.quantity}`;
+      const url = config.corsProxy ? `${config.corsProxy}${encodeURIComponent(targetUrl)}` : targetUrl;
+
+      const response = await fetch(url, { method: 'POST' });
+      if (!response.ok) throw new Error("Error de conexión al servidor SMM");
+      
+      const apiResult = await response.json();
+      
+      if (apiResult && apiResult.order) {
+        // Pedido creado con éxito en el proveedor
+        const updatedFields = {
+          status: 'processing',
+          providerOrderId: apiResult.order,
+          providerStatus: 'Pending' // Estado inicial del proveedor
+        };
+
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderToApprove.orderId);
+        await updateDoc(docRef, updatedFields);
+
+        // Actualizar lista local
+        setOrders(prev => prev.map(o => o.orderId === orderToApprove.orderId ? { ...o, ...updatedFields } : o));
+        
+        showToast(`¡Orden confirmada con éxito! ID Proveedor: ${apiResult.order}`, "success");
+        fetchBalanceFromApi(config.smmApiKey, config.corsProxy); // Recargar balance tras gasto
+      } else if (apiResult.error) {
+        showToast(`API Proveedor Error: ${apiResult.error}`, "error");
+      } else {
+        showToast("Respuesta desconocida de la API", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Fallo al conectar con el distribuidor. Verifica tu Proxy/API Key.", "error");
+    }
+  };
+
+  // Consultar estado en tiempo real en la API del proveedor
+  const handleCheckProviderStatus = async (orderToCheck) => {
+    if (!config.smmApiKey || !orderToCheck.providerOrderId) return;
+
+    try {
+      const targetUrl = `https://smm24h.com/api/v2?key=${config.smmApiKey}&action=status&order=${orderToCheck.providerOrderId}`;
+      const url = config.corsProxy ? `${config.corsProxy}${encodeURIComponent(targetUrl)}` : targetUrl;
+
+      const response = await fetch(url, { method: 'POST' });
+      if (!response.ok) return;
+      const apiResult = await response.json();
+
+      if (apiResult && !apiResult.error) {
+        // Mapear estados tradicionales de SMM a nuestro sistema
+        let mappedStatus = 'processing';
+        if (apiResult.status === 'Completed') mappedStatus = 'completed';
+        if (apiResult.status === 'Canceled' || apiResult.status === 'Failed') mappedStatus = 'failed';
+
+        const updatedFields = {
+          providerStatus: apiResult.status,
+          status: mappedStatus,
+          remains: apiResult.remains,
+          start_count: apiResult.start_count
+        };
+
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderToCheck.orderId);
+        await updateDoc(docRef, updatedFields);
+
+        setOrders(prev => prev.map(o => o.orderId === orderToCheck.orderId ? { ...o, ...updatedFields } : o));
+        showToast(`Orden actualizada: Estado en Proveedor: ${apiResult.status}`, "info");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Cambiar manualmente el estado (Si el admin realiza el trabajo manual o cancela)
+  const handleManualStatusChange = async (orderId, newStatus) => {
+    try {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
+      await updateDoc(docRef, { status: newStatus });
+      setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o));
+      showToast(`Estado de orden cambiado a ${newStatus}`, "info");
+    } catch (err) {
+      showToast("Error al actualizar estado", "error");
+    }
+  };
+
+  // Autenticación de Administrador local (con código PIN)
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPinInput === config.adminPin) {
+      setAdminLoggedIn(true);
+      showToast("Acceso de Administrador concedido", "success");
+    } else {
+      showToast("Código PIN incorrecto", "error");
+    }
+  };
+
+  // Copiar ID de Orden al Portapapeles de forma segura
+  const copyToClipboard = (text) => {
+    const tempInput = document.createElement("input");
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    showToast("¡Copiado al portapapeles!", "success");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white flex flex-col justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
+        <p className="text-zinc-400">Cargando Plataforma SMM Reseller...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-violet-500/30 selection:text-white">
       
-      {/* NOTIFICACIÓN FLOTANTE */}
-      {successNotification && (
-        <div className="fixed top-5 right-5 z-50 bg-indigo-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-indigo-400 transition-all duration-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-          <span className="font-semibold text-sm">{successNotification}</span>
+      {/* --- TOAST NOTIFICATIONS --- */}
+      {toast && (
+        <div className="fixed top-5 right-5 z-50 animate-bounce max-w-sm">
+          <div className={`p-4 rounded-xl shadow-2xl flex items-center gap-3 border ${
+            toast.type === 'success' ? 'bg-emerald-950 border-emerald-500 text-emerald-200' :
+            toast.type === 'error' ? 'bg-rose-950 border-rose-500 text-rose-200' :
+            'bg-zinc-900 border-violet-500 text-zinc-200'
+          }`}>
+            {toast.type === 'success' && <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />}
+            {toast.type === 'error' && <XCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />}
+            {toast.type === 'info' && <Info className="w-5 h-5 text-violet-400 flex-shrink-0" />}
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
         </div>
       )}
 
-      {/* CABECERA */}
-      <header className="border-b border-slate-900 bg-slate-900/60 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      {/* --- CABECERA PRINCIPAL --- */}
+      <header className="sticky top-0 z-40 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-850 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Sparkles className="w-6 h-6 text-white" />
+          {/* Logo & Marca */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('client')}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(124,58,237,0.4)]">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black tracking-tight bg-gradient-to-r from-purple-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent uppercase">
-                  ComprarSeguidoresYa
-                </h1>
-                <span className="text-[10px] bg-emerald-900/50 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  SEO Ready
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Seguidores, Likes y Visitas al Instante</p>
+              <h1 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-zinc-200 to-violet-400 bg-clip-text text-transparent">
+                SMM BOOST
+              </h1>
+              <p className="text-[10px] text-zinc-500 tracking-widest uppercase font-semibold">Reseller Elite</p>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Navegación Principal */}
+          <div className="flex items-center gap-2 bg-zinc-900/80 p-1.5 rounded-xl border border-zinc-800">
             <button 
-              onClick={() => setActiveTab('store')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'store' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' : 'text-slate-300 hover:bg-slate-800'}`}
+              onClick={() => setActiveTab('client')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'client' 
+                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/25' 
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              }`}
             >
-              <ShoppingCart className="w-4 h-4" />
-              Tienda / Servicios
+              <ShoppingBag className="w-3.5 h-3.5" />
+              Tienda
             </button>
+
             <button 
-              onClick={() => setActiveTab('orders')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'orders' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' : 'text-slate-300 hover:bg-slate-800'}`}
+              onClick={() => setActiveTab('track')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'track' 
+                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/25' 
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              }`}
             >
-              <Activity className="w-4 h-4" />
-              Tus Pedidos
-              <span className="bg-slate-950 text-purple-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                {ordersList.length}
-              </span>
+              <Search className="w-3.5 h-3.5" />
+              Seguir Pedido
             </button>
+
             <button 
               onClick={() => setActiveTab('admin')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'admin' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' : 'text-slate-300 hover:bg-slate-800'}`}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'admin' 
+                  ? 'bg-zinc-800 text-violet-400 border border-violet-500/30 shadow-sm' 
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              }`}
             >
-              <Settings className="w-4 h-4" />
-              Panel de Control
+              <Settings className="w-3.5 h-3.5" />
+              Panel Admin
             </button>
-            <button 
-              onClick={() => setActiveTab('guide')}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === 'guide' ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' : 'text-slate-300 hover:bg-slate-800'}`}
-            >
-              <Code className="w-4 h-4" />
-              Pasarela & CORS
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <div className="bg-slate-950 border border-slate-850 rounded-2xl px-4 py-2 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-[10px] text-slate-300 font-medium">Soporte por WhatsApp Activo</div>
-            </div>
           </div>
 
         </div>
       </header>
 
-      {/* MENÚ MÓVIL */}
-      <div className="md:hidden flex justify-around bg-slate-900 border-b border-slate-800 p-2 text-xs font-semibold text-center">
-        <button onClick={() => setActiveTab('store')} className={`flex flex-col items-center gap-1 ${activeTab === 'store' ? 'text-purple-400' : 'text-slate-400'}`}><ShoppingCart className="w-5 h-5" />Tienda</button>
-        <button onClick={() => setActiveTab('orders')} className={`flex flex-col items-center gap-1 ${activeTab === 'orders' ? 'text-purple-400' : 'text-slate-400'}`}><Activity className="w-5 h-5" />Pedidos</button>
-        <button onClick={() => setActiveTab('admin')} className={`flex flex-col items-center gap-1 ${activeTab === 'admin' ? 'text-purple-400' : 'text-slate-400'}`}><Settings className="w-5 h-5" />Control</button>
-        <button onClick={() => setActiveTab('guide')} className={`flex flex-col items-center gap-1 ${activeTab === 'guide' ? 'text-purple-400' : 'text-slate-400'}`}><Code className="w-5 h-5" />Guía</button>
-      </div>
+      {/* --- SECCIÓN PRINCIPAL DE CONTENIDO --- */}
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
 
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* BANNER INFORMATIVO */}
-        <div className="mb-8 p-5 rounded-3xl bg-gradient-to-r from-purple-950/20 via-slate-950 to-slate-950 border border-purple-500/20 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/30 text-purple-400 text-2xl">🔥</span>
-            <div>
-              <h2 className="text-sm font-bold text-slate-200">¡Tu marca está lista para posicionarse en los primeros puestos de Google!</h2>
-              <p className="text-xs text-slate-400 max-w-2xl mt-0.5">
-                Hemos optimizado la estructura con la palabra clave <strong className="text-indigo-400">"{seoTitle.split('-')[0].trim()}"</strong>. El cliente realiza el pedido, te envía el dinero a tu cuenta PayPal o Binance, te contacta por WhatsApp, verificas y activas el pedido en 1 clic.
-              </p>
-            </div>
-          </div>
-          <span className="text-[11px] font-bold bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-purple-300 shrink-0">
-            Modo: {mode === 'simulation' ? 'Demostración' : 'Conexión Real SMM24h'}
-          </span>
-        </div>
-
-        {/* ------------------ TAB 1: TIENDA ------------------ */}
-        {activeTab === 'store' && (
-          <div className="space-y-12 animate-fadeIn">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
-              {/* FORMULARIO DE COMPRA (COL-5) */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl -z-10" />
-                  
-                  <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-4">
-                    <ShoppingCart className="w-5 h-5 text-purple-400" />
-                    Formulario de Pedido
-                  </h3>
-
-                  {cartService ? (
-                    <form onSubmit={handleCheckoutSubmit} className="space-y-4">
-                      
-                      {/* Servicio seleccionado */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Servicio</label>
-                        <div className="p-3.5 bg-slate-950 border border-slate-850 rounded-xl flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-semibold text-purple-300">{cartService.name}</p>
-                            <p className="text-[11px] text-slate-500 mt-1">{cartService.category}</p>
-                          </div>
-                          <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg font-bold">
-                            ID: {cartService.service}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Campo Enlace */}
-                      <div>
-                        <label htmlFor="link" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Enlace o Link de destino
-                        </label>
-                        <input 
-                          type="url" 
-                          id="link"
-                          value={targetLink}
-                          onChange={(e) => setTargetLink(e.target.value)}
-                          placeholder="https://www.facebook.com/... o https://www.youtube.com/watch?v=..."
-                          className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-700 focus:ring-1 focus:ring-purple-500 outline-none transition"
-                          required
-                        />
-                      </div>
-
-                      {/* Comentarios personalizados */}
-                      {cartService.type === "Custom Comments" && (
-                        <div>
-                          <label htmlFor="comments" className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                            Escribe comentarios (uno por línea)
-                          </label>
-                          <textarea
-                            id="comments"
-                            rows={3}
-                            value={orderComments}
-                            onChange={(e) => {
-                              setOrderComments(e.target.value);
-                              const count = e.target.value.split('\n').filter(l => l.trim() !== '').length;
-                              setOrderQuantity(count > 0 ? count : 1);
-                            }}
-                            placeholder="Excelente video!&#10;Muy buen contenido...&#10;Genial!"
-                            className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-700 focus:ring-1 focus:ring-purple-500 outline-none transition animate-slideDown"
-                            required
-                          />
-                        </div>
-                      )}
-
-                      {/* Campo de Cantidad */}
-                      {cartService.type !== "Custom Comments" && (
-                        <div>
-                          <div className="flex justify-between items-center mb-1.5">
-                            <label htmlFor="quantity" className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
-                              Cantidad
-                            </label>
-                            <span className="text-[11px] text-slate-500">
-                              Min: {cartService.min} / Max: {cartService.max}
-                            </span>
-                          </div>
-                          <input 
-                            type="number" 
-                            id="quantity"
-                            min={cartService.min}
-                            max={cartService.max}
-                            value={orderQuantity}
-                            onChange={(e) => setOrderQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-                            className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl px-4 py-3 text-sm text-slate-100 focus:ring-1 focus:ring-purple-500 outline-none transition"
-                            required
-                          />
-                        </div>
-                      )}
-
-                      {/* MÉTODO DE PAGO */}
-                      <div className="space-y-2 pt-2">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
-                          Selecciona tu Método de Pago
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('paypal')}
-                            className={`p-3 rounded-xl border flex flex-col items-center justify-center transition gap-1.5 ${
-                              paymentMethod === 'paypal' 
-                                ? 'bg-blue-950/40 border-blue-500 text-blue-300 shadow-inner' 
-                                : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200'
-                            }`}
-                          >
-                            <DollarSign className="w-5 h-5 text-blue-400" />
-                            <span className="text-xs font-bold">PayPal</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('binance')}
-                            className={`p-3 rounded-xl border flex flex-col items-center justify-center transition gap-1.5 ${
-                              paymentMethod === 'binance' 
-                                ? 'bg-amber-950/40 border-amber-500 text-amber-300 shadow-inner' 
-                                : 'bg-slate-950 border-slate-850 text-slate-400 hover:text-slate-200'
-                            }`}
-                          >
-                            <QrCode className="w-5 h-5 text-amber-400" />
-                            <span className="text-xs font-bold">Binance Pay</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* PRECIO CLIENTE */}
-                      <div className="bg-slate-950 border border-slate-850 rounded-2xl p-4 mt-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-semibold text-slate-400">Total a pagar:</span>
-                          <span className="font-extrabold text-xl text-emerald-400">${currentPricing.totalToClient.toFixed(2)} USD</span>
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
-                      >
-                        <CreditCard className="w-5 h-5" />
-                        Procesar Orden & Pagar
-                      </button>
-                      
-                    </form>
-                  ) : (
-                    <div className="text-center py-10 text-slate-500">
-                      Selecciona un servicio a la derecha para ver opciones.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* LISTADO DE SERVICIOS (COL-7) */}
-              <div className="lg:col-span-7 space-y-6">
-                
-                <div className="bg-slate-900/50 p-4 rounded-3xl border border-slate-800 flex flex-col gap-4">
-                  
-                  {/* Categorías */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
-                    {platforms.map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedPlatform(p.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                          selectedPlatform === p.id 
-                            ? 'bg-purple-600 text-white shadow-lg' 
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-750'
-                        }`}
-                      >
-                        {p.icon}
-                        {p.name}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Búsqueda */}
-                  <div className="relative">
-                    <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                    <input
-                      type="text"
-                      placeholder="Filtrar seguidores, likes, visitas..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-sm text-slate-200 outline-none focus:border-purple-500 transition"
-                    />
-                  </div>
-
-                </div>
-
-                {/* SERVICIOS DISPONIBLES */}
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                  {apiError && (
-                    <div className="bg-red-950/20 border border-red-500/20 rounded-2xl p-4 text-center text-red-300 text-sm flex items-center justify-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      {apiError}
-                    </div>
-                  )}
-
-                  {!isLoading && filteredServices.map((serviceItem) => {
-                    const originalRate = parseFloat(serviceItem.rate);
-                    const clientRateK = originalRate + (originalRate * (markupPercent / 100));
-                    const isSelected = cartService?.service === serviceItem.service;
-
-                    return (
-                      <div 
-                        key={serviceItem.service}
-                        onClick={() => setCartService(serviceItem)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
-                          isSelected 
-                            ? 'bg-purple-950/20 border-purple-500 ring-1 ring-purple-400' 
-                            : 'bg-slate-900/40 border-slate-850 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3.5">
-                          <div className={`p-2.5 rounded-xl text-white flex-shrink-0 ${
-                            serviceItem.icon === 'instagram' ? 'bg-gradient-to-tr from-pink-500 via-purple-500 to-yellow-500' :
-                            serviceItem.icon === 'tiktok' ? 'bg-black border border-slate-800' :
-                            serviceItem.icon === 'youtube' ? 'bg-red-600' : 'bg-blue-600'
-                          }`}>
-                            {serviceItem.icon === 'instagram' && <Instagram className="w-4 h-4" />}
-                            {serviceItem.icon === 'tiktok' && <Flame className="w-4 h-4" />}
-                            {serviceItem.icon === 'youtube' && <Youtube className="w-4 h-4" />}
-                            {serviceItem.icon === 'facebook' && <Facebook className="w-4 h-4" />}
-                          </div>
-                          <div>
-                            <span className="text-[10px] uppercase font-bold text-purple-400 block tracking-wide">
-                              {serviceItem.category}
-                            </span>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <h4 className="font-bold text-slate-200 text-sm">{serviceItem.name}</h4>
-                              <div className="flex gap-1">
-                                {serviceItem.refill && (
-                                  <span className="text-[9px] bg-indigo-900/40 text-indigo-300 font-extrabold px-1.5 py-0.5 rounded border border-indigo-700/30">Refill</span>
-                                )}
-                                {serviceItem.cancel && (
-                                  <span className="text-[9px] bg-red-900/30 text-red-300 font-extrabold px-1.5 py-0.5 rounded border border-red-700/20">Cancelable</span>
-                                )}
-                              </div>
-                            </div>
-                            <span className="text-xs text-slate-500">Mín: {serviceItem.min} / Máx: {serviceItem.max}</span>
-                          </div>
-                        </div>
-
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase">P.V.P 1K</p>
-                          <p className="text-base font-extrabold text-emerald-400">${clientRateK.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* SECCIÓN FAQ (ACORDEÓN ESTÉTICO) */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 max-w-4xl mx-auto space-y-6">
-              <div className="text-center space-y-1">
-                <span className="text-purple-400 text-xs font-bold tracking-widest uppercase">FAQ del Servicio</span>
-                <h3 className="text-2xl font-extrabold text-slate-100">Preguntas Frecuentes</h3>
-                <p className="text-sm text-slate-400">Resolvemos tus dudas antes de que proceses tu orden.</p>
-              </div>
-
-              <div className="space-y-3.5">
-                {faqData.map((item, idx) => {
-                  const isOpen = activeFaq === idx;
-                  return (
-                    <div 
-                      key={idx} 
-                      className="bg-slate-950 border border-slate-850 rounded-2xl overflow-hidden transition-all duration-300"
-                    >
-                      <button
-                        onClick={() => setActiveFaq(isOpen ? null : idx)}
-                        className="w-full p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm hover:bg-slate-900/50"
-                      >
-                        <span className="text-slate-200">{item.q}</span>
-                        <ChevronDown className={`w-4 h-4 text-purple-400 transition-transform duration-300 ${isOpen ? 'transform rotate-180' : ''}`} />
-                      </button>
-                      
-                      <div className={`transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-40 border-t border-slate-900' : 'max-h-0'}`}>
-                        <div className="p-5 text-xs leading-relaxed text-slate-400">
-                          {item.a}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ------------------ MODAL DE PAGO PARA EL CLIENTE ------------------ */}
-        {activeOrderModal && (
-          <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-6 shadow-2xl">
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto text-purple-400 mb-2">
-                  <FileText className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-100">Orden Registrada Exitosamente</h3>
-                <p className="text-xs text-slate-400 mt-1">Tu número de orden es <strong className="text-purple-400 font-mono text-sm">#{activeOrderModal.id}</strong></p>
-              </div>
-
-              {/* INSTRUCCIONES DE PAGO */}
-              <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl space-y-3.5">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Instrucciones de Pago</p>
-                
-                {activeOrderModal.paymentMethod === 'paypal' ? (
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-slate-300">Envía el pago correspondiente a nuestra cuenta de PayPal:</p>
-                    <p className="text-sm font-extrabold text-blue-400 bg-blue-950/30 py-2 px-3 rounded-lg border border-blue-900/30 inline-block font-mono">
-                      {paypalEmail}
-                    </p>
-                    <div className="text-left text-[11px] text-slate-500 space-y-1 pt-1">
-                      <p>1. Selecciona "Enviar dinero a amigos o familiares".</p>
-                      <p>2. Envía la cantidad exacta de: <strong className="text-slate-200">${parseFloat(activeOrderModal.chargedToClient).toFixed(2)} USD</strong></p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-slate-300">Realiza tu pago vía Binance Pay (PayID):</p>
-                    <p className="text-sm font-extrabold text-amber-400 bg-amber-950/30 py-2 px-3 rounded-lg border border-amber-900/30 inline-block font-mono">
-                      PayID: {binancePayId}
-                    </p>
-                    <div className="text-left text-[11px] text-slate-500 space-y-1 pt-1">
-                      <p>1. Abre tu Binance App, ve a Pay y selecciona Enviar.</p>
-                      <p>2. Coloca nuestro ID y envía: <strong className="text-slate-200">${parseFloat(activeOrderModal.chargedToClient).toFixed(2)} USDT / USD</strong></p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* BOTÓN WHATSAPP PARA ENVIAR COMPROBANTE */}
-              <div className="space-y-3">
-                <p className="text-xs text-slate-400 text-center">Para activar tu pedido, presiona el botón de abajo y envíanos la captura de pantalla de tu pago por WhatsApp.</p>
-                
-                <a
-                  href={getWhatsAppLink(activeOrderModal)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  Enviar Comprobante por WhatsApp
-                </a>
-
-                <button
-                  onClick={() => setActiveOrderModal(null)}
-                  className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold py-2 px-4 rounded-xl text-xs transition"
-                >
-                  Ya envié el comprobante (Cerrar)
-                </button>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* ------------------ TAB 2: HISTORIAL DE PEDIDOS ------------------ */}
-        {activeTab === 'orders' && (
-          <div className="bg-slate-900/50 rounded-3xl border border-slate-800 p-6 shadow-xl animate-fadeIn">
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-purple-400" />
-                  Historial de Pedidos Clientes
-                </h3>
-                <p className="text-xs text-slate-400">Seguimiento en vivo de las órdenes procesadas por el panel.</p>
-              </div>
-              <button
-                onClick={handleCreateMockOrder}
-                className="bg-indigo-600 hover:bg-indigo-750 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center gap-1.5 self-end sm:self-auto transition"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Crear Orden de Prueba
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                    <th className="py-4 px-4">ID Orden</th>
-                    <th className="py-4 px-4">Servicio</th>
-                    <th className="py-4 px-4">Cantidad</th>
-                    <th className="py-4 px-4">Destino</th>
-                    <th className="py-4 px-4">Pago</th>
-                    <th className="py-4 px-4">Total</th>
-                    <th className="py-4 px-4 text-center">Estado</th>
-                    <th className="py-4 px-4 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/50 text-sm">
-                  {ordersList.map(order => (
-                    <tr key={order.id} className="hover:bg-slate-800/10 transition">
-                      <td className="py-4 px-4 font-bold text-slate-200">
-                        #{order.id}
-                        <div className="text-[10px] text-slate-500 font-medium">{order.date}</div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="font-semibold text-slate-200 block max-w-xs truncate">{order.serviceName}</span>
-                        <span className="text-[10px] text-slate-500 font-mono">SMM ID: {order.serviceId}</span>
-                      </td>
-                      <td className="py-4 px-4 font-mono text-slate-300">{order.quantity}</td>
-                      <td className="py-4 px-4">
-                        <a href={order.link} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:underline flex items-center gap-1 text-xs truncate max-w-[180px]">
-                          {order.link}
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                        </a>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          order.paymentMethod === 'paypal' ? 'bg-blue-950 text-blue-300' : 'bg-amber-950 text-amber-300'
-                        }`}>
-                          {order.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 font-bold text-emerald-400">${parseFloat(order.chargedToClient).toFixed(2)}</td>
-                      <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase border ${
-                          order.status === 'Completed' ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/20' :
-                          order.status === 'Awaiting Payment' ? 'bg-amber-950/60 text-amber-400 border-amber-500/20 animate-pulse' :
-                          order.status === 'Canceled' ? 'bg-red-950/40 text-red-400 border-red-500/10' :
-                          'bg-indigo-950/60 text-indigo-400 border-indigo-500/20'
-                        }`}>
-                          {order.status === 'Awaiting Payment' ? 'Pendiente Pago' : order.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {order.status !== 'Awaiting Payment' && order.status !== 'Canceled' && (
-                            <>
-                              <button
-                                onClick={() => handleRefreshStatus(order.id)}
-                                className="bg-slate-850 hover:bg-slate-800 text-slate-300 p-2 rounded-lg border border-slate-700 transition"
-                                title="Actualizar estado desde el servidor"
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                              </button>
-                              
-                              {order.refill && (
-                                <button
-                                  onClick={() => handleRequestRefill(order.id)}
-                                  className="bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 p-2 rounded-lg border border-indigo-800/40 transition text-xs font-bold"
-                                  title="Solicitar Relleno (Refill)"
-                                >
-                                  Refill
-                                </button>
-                              )}
-
-                              {order.cancel && (
-                                <button
-                                  onClick={() => handleRequestCancel(order.id)}
-                                  className="bg-red-950/30 hover:bg-red-900/40 text-red-400 p-2 rounded-lg border border-red-900/20 transition text-xs font-bold"
-                                  title="Solicitar Cancelación"
-                                >
-                                  Cancelar
-                                </button>
-                              )}
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleDeleteOrder(order.id)}
-                            className="bg-slate-850 text-slate-400 hover:text-white p-2 rounded-lg border border-slate-750 hover:bg-red-900/40 transition"
-                            title="Eliminar registro de la tabla"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {ordersList.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="text-center py-8 text-slate-500">Ningún pedido solicitado aún.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* ------------------ TAB 3: ADMIN ------------------ */}
-        {activeTab === 'admin' && (
+        {/* ==================== VISTA CLIENTE: TIENDA ==================== */}
+        {activeTab === 'client' && (
           <div className="space-y-8 animate-fadeIn">
             
-            {/* GOOGLE SERP SIMULATOR */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-100">
-                    Simulador de Resultados de Búsqueda de Google (Google SERP)
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Así aparecerá tu página web cuando la gente busque en Google. Optimizar el título y la descripción aumentará exponencialmente tus ventas.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Banner de Bienvenida y Propuesta de Valor */}
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-900 to-indigo-950/40 p-6 sm:p-10 border border-zinc-800">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/10 rounded-full filter blur-[80px] pointer-events-none"></div>
+              <div className="max-w-3xl space-y-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                  ⚡ Entrega de inmediato a tu perfil
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                  Impulsa la presencia de tus Redes Sociales al instante
+                </h2>
+                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                  Adquiere seguidores, me gusta, vistas y comentarios reales con la mayor tasa de retención del mercado. 
+                  Pagos seguros usando <strong className="text-violet-300">PayPal</strong> y <strong className="text-emerald-400">Binance Pay</strong> con soporte y validación 24/7 por WhatsApp.
+                </p>
                 
-                {/* Formulario de personalización de Meta Tags */}
-                <div className="space-y-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-850">
-                  <p className="text-xs font-bold uppercase tracking-wider text-purple-400">Personalizar Metadatos SEO</p>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Nombre de Dominio (URL)</label>
-                    <input 
-                      type="text" 
-                      value={seoDomain} 
-                      onChange={(e) => setSeoDomain(e.target.value)}
-                      placeholder="comprarseguidoresya.com" 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono"
-                    />
+                {/* Garantías de confianza */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-zinc-800 text-zinc-400 text-xs">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-violet-400" />
+                    <span>Garantía de Servicio</span>
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Título SEO (Máx 60 caracteres)</label>
-                    <input 
-                      type="text" 
-                      value={seoTitle} 
-                      onChange={(e) => setSeoTitle(e.target.value)}
-                      placeholder="Comprar Seguidores Ya - Seguidores Baratos" 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs"
-                    />
-                    <span className="text-[10px] text-slate-500">Longitud: {seoTitle.length} / 60 caracteres</span>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-violet-400" />
+                    <span>Inicio en Minutos</span>
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Meta Descripción (Máx 155 caracteres)</label>
-                    <textarea 
-                      value={seoDescription} 
-                      onChange={(e) => setSeoDescription(e.target.value)}
-                      rows={2}
-                      placeholder="Meta Descripción..." 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs"
-                    />
-                    <span className="text-[10px] text-slate-500">Longitud: {seoDescription.length} / 155 caracteres</span>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-violet-400" />
+                    <span>Perfiles Reales</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-violet-400" />
+                    <span>Soporte WhatsApp 24/7</span>
                   </div>
                 </div>
-
-                {/* Vista previa en vivo de Google */}
-                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-850 flex flex-col justify-center space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    Vista previa de Google Search (SERP)
-                  </p>
-                  <div className="bg-white text-slate-900 p-4 rounded-xl shadow-lg border border-slate-200">
-                    <div className="text-xs text-[#202124] flex items-center gap-1.5 font-sans">
-                      <span className="w-5 h-5 rounded-full bg-[#f1f3f4] flex items-center justify-center text-[10px] font-bold text-slate-600">C</span>
-                      <div>
-                        <p className="text-[12px] leading-tight font-medium">Comprar Seguidores Ya</p>
-                        <p className="text-[11px] text-[#5f6368] leading-tight">https://{seoDomain}</p>
-                      </div>
-                    </div>
-                    <h3 className="text-[19px] text-[#1a0dab] hover:underline cursor-pointer leading-tight font-medium mt-1.5 truncate">
-                      {seoTitle || "Comprar Seguidores Ya - Seguidores y Likes Rápidos"}
-                    </h3>
-                    <p className="text-[13px] text-[#4d5156] leading-normal mt-1 leading-snug">
-                      {seoDescription || "Introduce una descripción optimizada para convencer a la gente de hacer clic en tu página web sobre la competencia."}
-                    </p>
-                  </div>
-                  <p className="text-[10px] text-slate-500 italic text-center">
-                    * Usar palabras clave de alta intención de compra en el título y meta descripción aumenta tu CTR (porcentaje de clics).
-                  </p>
-                </div>
-
               </div>
             </div>
 
-            {/* PALABRAS CLAVE SMM QUE MÁS DINERO GENERAN (SEO CHECKLIST) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-slate-100">Palabras Clave más Buscadas para Optimizar tu Web</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {HIGH_VALUE_KEYWORDS.map((item, index) => (
-                  <div key={index} className="bg-slate-950 border border-slate-850 p-4 rounded-2xl flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-indigo-400">"{item.term}"</p>
-                      <p className="text-[11px] text-slate-400 mt-1">Volumen: <strong className="text-slate-300">{item.volume}</strong></p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                        item.difficulty === 'Baja' ? 'bg-emerald-950/60 text-emerald-400' :
-                        item.difficulty === 'Media' ? 'bg-amber-950/60 text-amber-400' :
-                        'bg-red-950/60 text-red-400'
-                      }`}>
-                        Dif: {item.difficulty}
-                      </span>
-                    </div>
-                  </div>
+            {/* Selector de Categorías */}
+            <div>
+              <label className="block text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-violet-400" /> Selecciona la Red Social o Servicio
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setSelectedService(null);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                      selectedCategory === cat 
+                        ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20' 
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                    }`}
+                  >
+                    {cat}
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* MÉTRICAS DE VENTAS Y BALANCE DE API */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase">Facturado Confirmado</p>
-                  <p className="text-2xl font-black text-emerald-400 mt-1">${adminStats.totalVendido} USD</p>
-                </div>
-                <div className="p-4 bg-emerald-950/50 text-emerald-400 rounded-2xl"><DollarSign className="w-6 h-6" /></div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase">Costo SMM24H</p>
-                  <p className="text-2xl font-black text-slate-300 mt-1">${adminStats.totalInversor} USD</p>
-                </div>
-                <div className="p-4 bg-slate-800 text-slate-300 rounded-2xl"><Database className="w-6 h-6" /></div>
-              </div>
-              <div className="bg-slate-900 border border-purple-500/20 p-6 rounded-3xl flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-purple-400 font-bold uppercase">Ganancias Limpias</p>
-                  <p className="text-2xl font-black text-purple-400 mt-1">${adminStats.gananciasNetas} USD</p>
-                </div>
-                <div className="p-4 bg-purple-950 text-purple-400 rounded-2xl"><TrendingUp className="w-6 h-6 animate-pulse" /></div>
-              </div>
+            {/* Grid de Servicios en la Categoría */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               
-              {/* BALANCE DEL PROVEEDOR REAL (SMM24H ENDPOINT) */}
-              <div className="bg-slate-900 border border-indigo-500/30 p-6 rounded-3xl flex items-center justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl" />
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-xs text-slate-400 font-bold uppercase">API SMM24H Balance</p>
-                    <button 
-                      onClick={handleFetchBalance} 
-                      disabled={balanceLoading}
-                      className="text-indigo-400 hover:text-white transition disabled:opacity-50"
-                      title="Sincronizar Balance de la API"
+              {/* Tarjetas de Servicios de la categoría seleccionada */}
+              <div className="md:col-span-2 space-y-3">
+                <h3 className="text-sm font-bold text-zinc-400 tracking-wider uppercase mb-2">Servicios Disponibles</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {services
+                    .filter(s => s.category === selectedCategory)
+                    .map((service) => {
+                      const calculatedMarkupRate = parseFloat(service.rate) * (1 + config.markupPercent / 100);
+                      const isSelected = selectedService?.service === service.service;
+                      
+                      return (
+                        <div
+                          key={service.service}
+                          onClick={() => setSelectedService(service)}
+                          className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                            isSelected 
+                              ? 'bg-gradient-to-r from-violet-950/30 to-zinc-900 border-violet-500 shadow-[0_0_15px_rgba(124,58,237,0.1)]' 
+                              : 'bg-zinc-900/60 border-zinc-850 hover:bg-zinc-900 hover:border-zinc-750'
+                          }`}
+                        >
+                          <div className="space-y-1 flex-1">
+                            <span className="text-[10px] uppercase tracking-wider bg-violet-900/40 text-violet-400 px-2.5 py-0.5 rounded-full font-bold">
+                              ID: {service.service}
+                            </span>
+                            <h4 className="font-bold text-zinc-100 text-sm sm:text-base">{service.name}</h4>
+                            <div className="flex items-center gap-4 text-xs text-zinc-400 pt-1">
+                              <span>Mínimo: <strong className="text-zinc-300">{service.min}</strong></span>
+                              <span>Máximo: <strong className="text-zinc-300">{service.max}</strong></span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex sm:flex-col items-end justify-between sm:justify-center border-t sm:border-t-0 border-zinc-800 pt-2 sm:pt-0">
+                            <span className="text-xs text-zinc-400">Por cada 1,000</span>
+                            <span className="text-lg font-black text-violet-400">
+                              ${calculatedMarkupRate.toFixed(2)} USD
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Formulario Calculador & Creación de Orden */}
+              <div className="bg-zinc-900/90 rounded-2xl p-6 border border-zinc-800 space-y-6 h-fit sticky top-24 shadow-xl">
+                <div className="border-b border-zinc-800 pb-4">
+                  <h3 className="font-extrabold text-lg text-white">Configurar Pedido</h3>
+                  <p className="text-xs text-zinc-400 mt-1">Completa los campos para procesar la orden inmediatamente</p>
+                </div>
+
+                {selectedService ? (
+                  <form onSubmit={handlePlaceOrder} className="space-y-5">
+                    
+                    {/* Resumen del Servicio Seleccionado */}
+                    <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-850 space-y-1 text-xs">
+                      <span className="text-zinc-500">Servicio Seleccionado:</span>
+                      <p className="font-bold text-violet-400 line-clamp-2">{selectedService.name}</p>
+                      <div className="flex justify-between text-[11px] pt-2 border-t border-zinc-900 mt-2 text-zinc-400">
+                        <span>Límites: {selectedService.min} - {selectedService.max}</span>
+                        <span>Costo: ${ (parseFloat(selectedService.rate) * (1 + config.markupPercent / 100)).toFixed(2) } por 1K</span>
+                      </div>
+                    </div>
+
+                    {/* Campo para el Enlace de Perfil */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                        Enlace o Nombre de Usuario
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="ej: https://instagram.com/tuperfil"
+                        value={orderLink}
+                        onChange={(e) => setOrderLink(e.target.value)}
+                        required
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all duration-200"
+                      />
+                      <span className="text-[10px] text-zinc-500 block">Asegúrate de que la cuenta esté en modo PÚBLICO.</span>
+                    </div>
+
+                    {/* Campo para la Cantidad */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                          Cantidad a Solicitar
+                        </label>
+                        <span className="text-[11px] text-zinc-400">
+                          Rango: {selectedService.min} - {selectedService.max}
+                        </span>
+                      </div>
+                      <input
+                        type="number"
+                        min={selectedService.min}
+                        max={selectedService.max}
+                        placeholder={`Mínimo ${selectedService.min}`}
+                        value={orderQuantity}
+                        onChange={(e) => setOrderQuantity(e.target.value)}
+                        required
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all duration-200"
+                      />
+                    </div>
+
+                    {/* Selección de Método de Pago */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                        Método de Pago Preferido
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('paypal')}
+                          className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs font-bold ${
+                            paymentMethod === 'paypal' 
+                              ? 'bg-blue-950/20 border-blue-500 text-blue-400' 
+                              : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:border-zinc-700'
+                          }`}
+                        >
+                          <span className="text-sm font-black italic text-blue-500">PayPal</span>
+                          <span className="text-[10px] opacity-80">Manual</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('binance')}
+                          className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs font-bold ${
+                            paymentMethod === 'binance' 
+                              ? 'bg-yellow-950/20 border-yellow-500 text-yellow-500' 
+                              : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:border-zinc-700'
+                          }`}
+                        >
+                          <span className="text-sm font-black tracking-tight text-yellow-500">BINANCE PAY</span>
+                          <span className="text-[10px] opacity-80">Instantáneo (USDT)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Resumen del Precio Final */}
+                    <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-400 text-xs">Precio unitario:</span>
+                        <span className="text-zinc-200 text-xs">${(parseFloat(selectedService.rate) * (1 + config.markupPercent / 100) / 1000).toFixed(4)} USD / ud</span>
+                      </div>
+                      <div className="flex justify-between items-end pt-2 border-t border-zinc-900">
+                        <span className="text-zinc-400 text-xs font-semibold">Total a pagar:</span>
+                        <span className="text-2xl font-black text-white">${calculatedPrice.toFixed(2)} <span className="text-xs text-zinc-400">USD</span></span>
+                      </div>
+                    </div>
+
+                    {/* Botón de envío */}
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-violet-600/25 flex items-center justify-center gap-2 transition-all duration-200"
                     >
-                      <RefreshCcw className={`w-3 h-3 ${balanceLoading ? 'animate-spin' : ''}`} />
+                      <span>Generar Orden de Compra</span>
+                      <ArrowRight className="w-4 h-4" />
                     </button>
+
+                  </form>
+                ) : (
+                  <div className="py-12 text-center text-zinc-500 flex flex-col items-center gap-3">
+                    <ShoppingBag className="w-12 h-12 text-zinc-700 stroke-[1.5]" />
+                    <p className="text-sm">Selecciona uno de los servicios del listado izquierdo para iniciar la cotización.</p>
                   </div>
-                  <p className="text-2xl font-black text-indigo-400 mt-1">
-                    {providerBalance ? `$${providerBalance} USD` : "No cargado"}
-                  </p>
-                  <span className="text-[9px] text-slate-500">Mínimo para órdenes</span>
-                </div>
-                <div className="p-4 bg-indigo-950/40 text-indigo-400 rounded-2xl"><Zap className="w-6 h-6" /></div>
-              </div>
-            </div>
+                )}
 
-            {/* CALCULADORA DE GANANCIAS */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <Percent className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-lg font-bold text-slate-100">Calculadora de Ganancias Mensuales Estimadas</h3>
-              </div>
-              <p className="text-xs text-slate-400">
-                Ajusta las variables de ventas para estimar cuánto dinero neto podrías ganar mensualmente con el margen actual del <strong className="text-purple-400">{markupPercent}%</strong>.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-2">
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-slate-400 mb-1">
-                      <span>Ventas mensuales estimadas:</span>
-                      <span className="text-indigo-400 font-mono">{calcSalesVolume} órdenes</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="1000" 
-                      step="10"
-                      value={calcSalesVolume}
-                      onChange={(e) => setCalcSalesVolume(parseInt(e.target.value))}
-                      className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-slate-950 rounded-2xl space-y-1.5 text-xs text-slate-400">
-                    <p>• Suponiendo un ticket promedio de compra de <strong className="text-slate-300">$5.00 USD (Precio Proveedor)</strong></p>
-                    <p>• Tu precio final al público sería de: <strong className="text-emerald-400">${(5.00 + (5.00 * (markupPercent / 100))).toFixed(2)} USD</strong></p>
-                  </div>
-                </div>
-
-                <div className="bg-indigo-950/10 border border-indigo-500/20 rounded-3xl p-6 text-center space-y-2">
-                  <p className="text-xs uppercase font-extrabold text-slate-400">Beneficio Neto Mensual Estimado</p>
-                  <p className="text-4xl font-black text-emerald-400">
-                    ${(calcSalesVolume * (5.00 * (markupPercent / 100))).toFixed(2)} USD
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    Calculado con un volumen de {calcSalesVolume} pedidos de $5.00 USD (costo mayorista) con un {markupPercent}% de margen de beneficio.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* CONTROL DE ACTIVACIÓN DE PEDIDOS (WHATSAPP DE ENTRADA) */}
-            <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-purple-400" />
-                    Activación Manual de Órdenes (Cobros Recibidos)
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Una vez confirmes en tu cuenta de PayPal o Binance la llegada del dinero, presiona el botón **"Activar e Iniciar SMM"** de la orden respectiva para disparar el pedido de forma automática.
-                  </p>
-                </div>
-                <button 
-                  onClick={handleCreateMockOrder}
-                  className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
-                >
-                  <PlusCircle className="w-4 h-4" /> Generar Órden de Prueba
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-xs text-slate-500 font-bold uppercase">
-                      <th className="py-3 px-4">Orden Temporal</th>
-                      <th className="py-3 px-4">Cliente / Enlace</th>
-                      <th className="py-3 px-4">Servicio SMM</th>
-                      <th className="py-3 px-4">Cobrar al Cliente</th>
-                      <th className="py-3 px-4">Costo SMM24h (Tú)</th>
-                      <th className="py-3 px-4 text-center">Método Pago</th>
-                      <th className="py-3 px-4 text-right">Acción de Envío</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 text-xs">
-                    {ordersList.filter(o => o.status === 'Awaiting Payment').map(order => (
-                      <tr key={order.id} className="hover:bg-slate-800/20 transition">
-                        <td className="py-4 px-4 font-bold text-amber-400">#{order.id}</td>
-                        <td className="py-4 px-4">
-                          <p className="font-semibold text-slate-300">Cantidad: {order.quantity}</p>
-                          <a href={order.link} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline block truncate max-w-xs">{order.link}</a>
-                        </td>
-                        <td className="py-4 px-4 text-slate-400">{order.serviceName}</td>
-                        <td className="py-4 px-4 font-bold text-emerald-400">${parseFloat(order.chargedToClient).toFixed(2)}</td>
-                        <td className="py-4 px-4 font-mono text-slate-500">${parseFloat(order.costToOwner).toFixed(2)}</td>
-                        <td className="py-4 px-4 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                            order.paymentMethod === 'paypal' ? 'bg-blue-950 text-blue-300' : 'bg-amber-950 text-amber-300'
-                          }`}>
-                            {order.paymentMethod}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4 text-right space-y-1 min-w-[150px]">
-                          <button
-                            onClick={() => handleActivateOrder(order.id)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition block w-full text-center"
-                          >
-                            Activar e Iniciar SMM
-                          </button>
-                          <a
-                            href={getActivationNotificationLink(order)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 py-1 px-3 rounded-lg text-[10px] transition block text-center"
-                          >
-                            Notificar por WhatsApp
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                    {ordersList.filter(o => o.status === 'Awaiting Payment').length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="text-center py-6 text-slate-500 italic">No hay órdenes pendientes de activación en este momento. ¡Prueba agregando una orden de prueba!</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* CONFIGURACIÓN DE CONTACTO Y MÉTODOS DE PAGO DE LA WEB */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              
-              <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
-                <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4 text-emerald-400" />
-                  Configurar Datos de Cobro (Dueño)
-                </h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="ownerWhatsapp" className="block text-xs text-slate-400 mb-1">Tu WhatsApp (Sin símbolos, Ej: 34600112233)</label>
-                    <input 
-                      type="text" 
-                      id="ownerWhatsapp"
-                      value={ownerWhatsapp}
-                      onChange={(e) => setOwnerWhatsapp(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="paypalEmail" className="block text-xs text-slate-400 mb-1">Tu Correo de PayPal (Para recibir pagos)</label>
-                    <input 
-                      type="email" 
-                      id="paypalEmail"
-                      value={paypalEmail}
-                      onChange={(e) => setPaypalEmail(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="binancePayId" className="block text-xs text-slate-400 mb-1">Tu Pay ID de Binance (Para recibir criptomonedas)</label>
-                    <input 
-                      type="text" 
-                      id="binancePayId"
-                      value={binancePayId}
-                      onChange={(e) => setBinancePayId(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* INTEGRACIÓN SMM24H API & MARKUP */}
-              <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
-                <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-1.5">
-                  <Database className="w-4 h-4 text-purple-400" />
-                  Configurar Proveedor Mayorista & Margen
-                </h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-2">Modo de Operación</label>
-                    <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl">
-                      <button type="button" onClick={() => setMode('simulation')} className={`py-1.5 px-3 rounded-lg text-xs font-bold transition ${mode === 'simulation' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}>Simulador</button>
-                      <button type="button" onClick={() => setMode('production')} className={`py-1.5 px-3 rounded-lg text-xs font-bold transition ${mode === 'production' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}>API SMM Real</button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="proxyUrl" className="block text-xs text-slate-400 mb-1">URL del Proxy PHP (Opcional, evita bloqueo de CORS)</label>
-                    <input 
-                      type="text" 
-                      id="proxyUrl"
-                      value={proxyUrl}
-                      onChange={(e) => setProxyUrl(e.target.value)}
-                      placeholder="https://tudominio.com/smm-proxy.php"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="apiKey" className="block text-xs text-slate-400 mb-1">Clave de API de SMM24H</label>
-                    <input 
-                      type="password" 
-                      id="apiKey"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="API Key de SMM24H"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs text-slate-400 mb-1">
-                      <span>Margen de Ganancia (Comisión)</span>
-                      <span className="text-purple-400 font-bold">{markupPercent}%</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="300" 
-                      step="10"
-                      value={markupPercent}
-                      onChange={(e) => setMarkupPercent(parseInt(e.target.value))}
-                      className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                    />
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -1650,138 +815,642 @@ Ya hemos activado el pedido de forma automatizada en nuestros servidores. Comenz
           </div>
         )}
 
-        {/* ------------------ TAB 4: GUIA TÉCNICA ------------------ */}
-        {activeTab === 'guide' && (
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-6 animate-fadeIn">
-            <div>
-              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <Code className="w-5 h-5 text-purple-400" />
-                Flujo de Integración Técnico para Producción
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Sigue estos pasos para subir esta aplicación a tu hosting y ocultar tu API Key.</p>
+        {/* ==================== VISTA CLIENTE: SEGUIMIENTO DE ORDEN ==================== */}
+        {activeTab === 'track' && (
+          <div className="max-w-2xl mx-auto space-y-8 animate-fadeIn">
+            
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-extrabold text-white">Rastreo de Pedido</h2>
+              <p className="text-zinc-400 text-sm">Consulta el estado de tu pedido directamente con tu ID de Orden</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-slate-300">
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-200">1. ¿Cómo funciona la protección de clave?</h4>
-                <p>Al conectar tu frontend al API real del proveedor, el navegador podría bloquear las peticiones debido a políticas CORS. Además, un usuario malintencionado podría inspeccionar la consola web y robar tu API Key.</p>
-                <p>Para solucionar esto de manera profesional, utiliza el archivo proxy **smm-proxy.php** del lado de tu hosting para inyectar la clave y realizar la llamada HTTPS de forma encriptada y oculta.</p>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-bold text-slate-200">2. Configura tu Proxy en el Panel</h4>
-                <p>1. Crea un archivo en tu hosting con el código PHP del cuadro inferior.</p>
-                <p>2. Escribe tu API Key real directamente dentro del código PHP de forma segura.</p>
-                <p>3. Copia el enlace HTTPS de tu proxy y pégalo en el campo "URL del Proxy PHP" de tu panel de control de ComprarSeguidoresYa (en la pestaña Control).</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-purple-400">Script PHP Proxy Seguro (smm-proxy.php)</span>
+            <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl">
+              <form onSubmit={handleTrackOrder} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Introduce el código de tu orden (ej: ORD-123456)"
+                  value={orderTrackingId}
+                  onChange={(e) => setOrderTrackingId(e.target.value)}
+                  className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                />
                 <button
-                  onClick={() => copyToClipboard(`<?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST");
-header("Content-Type: application/json; charset=UTF-8");
-
-// Configura tu API Key de SMM24h aquí de forma 100% oculta al usuario final
-$api_key = "cd8c1361406af3d5d6459633f8908b0c"; 
-$api_url = "https://smm24h.com/api/v2";
-
-$action = $_POST['action'] ?? '';
-
-if (empty($action)) {
-    echo json_encode(["error" => "No action specified"]);
-    exit;
-}
-
-$post_fields = [
-    'key' => $api_key,
-    'action' => $action
-];
-
-// Mapeado seguro de todos los parámetros aceptados por la API de SMM24h
-if (isset($_POST['service'])) $post_fields['service'] = $_POST['service'];
-if (isset($_POST['link'])) $post_fields['link'] = $_POST['link'];
-if (isset($_POST['quantity'])) $post_fields['quantity'] = $_POST['quantity'];
-if (isset($_POST['order'])) $post_fields['order'] = $_POST['order'];
-if (isset($_POST['orders'])) $post_fields['orders'] = $_POST['orders'];
-if (isset($_POST['refill'])) $post_fields['refill'] = $_POST['refill'];
-if (isset($_POST['refills'])) $post_fields['refills'] = $_POST['refills'];
-if (isset($_POST['comments'])) $post_fields['comments'] = $_POST['comments'];
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $api_url);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_fields));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-$response = curl_exec($ch);
-echo $response;
-curl_close($ch);
-?>`)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-3 rounded-lg text-[11px] transition flex items-center gap-1"
+                  type="submit"
+                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-violet-600/15 flex items-center gap-2 flex-shrink-0"
                 >
-                  <Copy className="w-3.5 h-3.5" /> Copiar Código PHP
+                  <Search className="w-4 h-4" />
+                  <span>Rastrear</span>
                 </button>
-              </div>
+              </form>
 
-              <pre className="bg-slate-950 p-4 rounded-xl text-[11px] font-mono text-slate-300 overflow-x-auto max-h-56 leading-relaxed">
-{`<?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST");
-header("Content-Type: application/json; charset=UTF-8");
+              {trackedOrder && (
+                <div className="mt-8 border-t border-zinc-800 pt-6 space-y-6">
+                  
+                  {/* Status Badge */}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase tracking-wider font-bold">Estado Actual</span>
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-1 ${
+                        trackedOrder.status === 'pending_payment' ? 'bg-amber-500/10 border-amber-500 text-amber-400' :
+                        trackedOrder.status === 'processing' ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' :
+                        trackedOrder.status === 'completed' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' :
+                        'bg-zinc-800 border-zinc-700 text-zinc-400'
+                      }`}>
+                        {trackedOrder.status === 'pending_payment' && '⚠️ Esperando Confirmación de Pago'}
+                        {trackedOrder.status === 'processing' && '⚙️ Procesando / Enviando'}
+                        {trackedOrder.status === 'completed' && '✅ Completado'}
+                        {trackedOrder.status === 'failed' && '❌ Cancelado/Fallido'}
+                      </span>
+                    </div>
 
-// Configura tu API Key de SMM24h aquí de forma 100% oculta al usuario final
-$api_key = "cd8c1361406af3d5d6459633f8908b0c"; 
-$api_url = "https://smm24h.com/api/v2";
+                    <div className="text-right">
+                      <span className="text-[10px] text-zinc-500 block uppercase tracking-wider font-bold">Fecha de Compra</span>
+                      <span className="text-sm font-semibold text-zinc-300">
+                        {new Date(trackedOrder.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
 
-$action = $_POST['action'] ?? '';
+                  {/* Factura Detallada */}
+                  <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-850 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500">ID de Orden:</span>
+                      <strong className="text-violet-400 font-mono">{trackedOrder.orderId}</strong>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500">Servicio:</span>
+                      <strong className="text-right text-zinc-200 max-w-xs truncate">{trackedOrder.serviceName}</strong>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500">Destino:</span>
+                      <a href={trackedOrder.link} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:underline flex items-center gap-1 text-right max-w-xs truncate">
+                        {trackedOrder.link} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500">Cantidad:</span>
+                      <strong className="text-zinc-200">{trackedOrder.quantity} unidades</strong>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500">Método de Pago:</span>
+                      <strong className="text-zinc-200 uppercase">{trackedOrder.paymentMethod}</strong>
+                    </div>
+                    <div className="flex justify-between text-base pt-3 border-t border-zinc-900 font-bold">
+                      <span className="text-zinc-400">Total pagado:</span>
+                      <span className="text-white">${trackedOrder.sellPrice.toFixed(2)} USD</span>
+                    </div>
+                  </div>
 
-if (empty($action)) {
-    echo json_encode(["error" => "No action specified"]);
-    exit;
-}
+                  {/* Instrucciones según estado */}
+                  {trackedOrder.status === 'pending_payment' && (
+                    <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3 text-xs text-amber-200/90 leading-relaxed">
+                      <p className="font-bold flex items-center gap-1.5 text-amber-400">
+                        🔔 Tu pago está pendiente de aprobación manual
+                      </p>
+                      <p>
+                        Si ya realizaste el pago por Binance o PayPal, por favor haz clic en el siguiente botón para confirmar el ID de tu orden en WhatsApp. Uno de nuestros operadores procesará la activación de inmediato.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setCreatedOrderDetails(trackedOrder);
+                          setShowCheckoutModal(true);
+                        }}
+                        className="w-full bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all mt-1"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Ver Instrucciones y Notificar Pago</span>
+                      </button>
+                    </div>
+                  )}
 
-$post_fields = [
-    'key' => $api_key,
-    'action' => $action
-];
+                  {trackedOrder.status === 'processing' && (
+                    <div className="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl text-xs text-indigo-200/90 leading-relaxed space-y-1">
+                      <p className="font-bold text-indigo-400 flex items-center gap-1.5">
+                        ⚡ ¡Tu pedido ya se encuentra en camino!
+                      </p>
+                      <p>
+                        El pago ha sido acreditado exitosamente. Los seguidores/interacciones se están inyectando en tu cuenta de manera gradual para garantizar la seguridad de tu perfil. Este proceso suele demorar de 10 a 60 minutos.
+                      </p>
+                    </div>
+                  )}
 
-// Mapeado seguro de todos los parámetros aceptados por la API de SMM24h
-if (isset($_POST['service'])) $post_fields['service'] = $_POST['service'];
-if (isset($_POST['link'])) $post_fields['link'] = $_POST['link'];
-if (isset($_POST['quantity'])) $post_fields['quantity'] = $_POST['quantity'];
-if (isset($_POST['order'])) $post_fields['order'] = $_POST['order'];
-if (isset($_POST['orders'])) $post_fields['orders'] = $_POST['orders'];
-if (isset($_POST['refill'])) $post_fields['refill'] = $_POST['refill'];
-if (isset($_POST['refills'])) $post_fields['refills'] = $_POST['refills'];
-if (isset($_POST['comments'])) $post_fields['comments'] = $_POST['comments'];
+                  {trackedOrder.status === 'completed' && (
+                    <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-xs text-emerald-200/90 leading-relaxed space-y-1">
+                      <p className="font-bold text-emerald-400 flex items-center gap-1.5">
+                        🎉 ¡Pedido completado con éxito!
+                      </p>
+                      <p>
+                        El servicio ha sido inyectado en su totalidad. ¡Muchas gracias por tu confianza! Si tienes alguna duda, puedes contactar con nuestro canal de soporte.
+                      </p>
+                    </div>
+                  )}
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $api_url);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_fields));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                </div>
+              )}
 
-$response = curl_exec($ch);
-echo $response;
-curl_close($ch);
-?>`}
-              </pre>
             </div>
+
+          </div>
+        )}
+
+        {/* ==================== VISTA: ADMINISTRADOR ==================== */}
+        {activeTab === 'admin' && (
+          <div className="space-y-8 animate-fadeIn">
+
+            {/* Login de Administración */}
+            {!adminLoggedIn ? (
+              <div className="max-w-md mx-auto bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl space-y-6">
+                <div className="text-center space-y-1.5">
+                  <div className="w-12 h-12 bg-violet-600/10 rounded-full flex items-center justify-center mx-auto text-violet-400 mb-2 border border-violet-500/20">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-xl text-white">Acceso Administrativo</h3>
+                  <p className="text-xs text-zinc-400">Introduce tu PIN de administrador para continuar</p>
+                </div>
+
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">PIN Secreto</label>
+                    <input
+                      type="password"
+                      placeholder="Predeterminado: 1234"
+                      value={adminPinInput}
+                      onChange={(e) => setAdminPinInput(e.target.value)}
+                      required
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-center text-lg tracking-widest text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all"
+                  >
+                    Desbloquear Panel
+                  </button>
+                </form>
+              </div>
+            ) : (
+              // PANEL PRINCIPAL DE ADMINISTRACIÓN COMPLETO
+              <div className="space-y-8">
+                
+                {/* Métricas e Info Rápidas */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  
+                  <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Balance SMM24H</span>
+                      <p className="text-2xl font-black text-white">{apiBalance}</p>
+                      <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+                        <span className={`w-2 h-2 rounded-full ${isApiConnected ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                        {isApiConnected ? 'Conectado a SMM24h' : 'API SMM Desconectada'}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        fetchBalanceFromApi(config.smmApiKey, config.corsProxy);
+                        fetchServicesFromApi(config.smmApiKey, config.corsProxy);
+                      }}
+                      className="p-2 bg-zinc-950 hover:bg-zinc-800 rounded-xl border border-zinc-850 text-zinc-400 hover:text-white transition-all"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+                    <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Porcentaje de Ganancia</span>
+                    <p className="text-2xl font-black text-violet-400">+{config.markupPercent}%</p>
+                    <span className="text-[10px] text-zinc-400">Ejemplo: Servicio $1.00 se vende a ${(1 * (1 + config.markupPercent/100)).toFixed(2)}</span>
+                  </div>
+
+                  <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+                    <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Órdenes Registradas</span>
+                    <p className="text-2xl font-black text-indigo-400">{orders.length}</p>
+                    <span className="text-[10px] text-zinc-400">Totales en la base de datos</span>
+                  </div>
+
+                </div>
+
+                {/* Grid Administrativo: Ajustes + Órdenes */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  
+                  {/* CONFIGURACIONES GENERALES DE REVENTA */}
+                  <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 space-y-6 h-fit">
+                    <div className="border-b border-zinc-800 pb-3 flex items-center justify-between">
+                      <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+                        <Sliders className="w-5 h-5 text-violet-400" />
+                        Configuración Reseller
+                      </h3>
+                      <button 
+                        onClick={() => setAdminLoggedIn(false)}
+                        className="text-xs text-rose-400 hover:underline"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveConfig} className="space-y-4 text-xs">
+                      
+                      {/* API Key SMM24H */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          SMM24h API Key
+                        </label>
+                        <input
+                          type="password"
+                          placeholder="Tu API Key de smm24h.com"
+                          value={config.smmApiKey}
+                          onChange={(e) => setConfig({ ...config, smmApiKey: e.target.value })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      {/* Margen de Ganancia */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          Porcentaje de Recargo (Ganancia)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="1000"
+                            placeholder="50"
+                            value={config.markupPercent}
+                            onChange={(e) => setConfig({ ...config, markupPercent: parseInt(e.target.value, 10) || 0 })}
+                            required
+                            className="w-24 bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-violet-500"
+                          />
+                          <span className="text-zinc-400 text-sm font-semibold">% de ganancia neta</span>
+                        </div>
+                      </div>
+
+                      {/* WhatsApp destino */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          Número de WhatsApp de Cobro
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ej: +573000000000"
+                          value={config.whatsappNumber}
+                          onChange={(e) => setConfig({ ...config, whatsappNumber: e.target.value })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+
+                      {/* PayPal Email */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          Cuenta PayPal de Destino
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="tu-correo@paypal.com"
+                          value={config.paypalEmail}
+                          onChange={(e) => setConfig({ ...config, paypalEmail: e.target.value })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+
+                      {/* Binance Pay ID */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          Binance Pay ID
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ID de Pago de Binance"
+                          value={config.binancePayId}
+                          onChange={(e) => setConfig({ ...config, binancePayId: e.target.value })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+
+                      {/* Admin PIN */}
+                      <div className="space-y-1.5">
+                        <label className="block font-bold text-zinc-300 uppercase tracking-wider">
+                          PIN de Acceso Administrador
+                        </label>
+                        <input
+                          type="text"
+                          value={config.adminPin}
+                          onChange={(e) => setConfig({ ...config, adminPin: e.target.value })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg px-3 py-2 text-white"
+                        />
+                      </div>
+
+                      {/* CORS Proxy (Avanzado) */}
+                      <div className="space-y-1.5 pt-2 border-t border-zinc-800">
+                        <label className="block font-bold text-zinc-500 uppercase tracking-wider">
+                          Proxy de Conexión CORS (Avanzado)
+                        </label>
+                        <input
+                          type="text"
+                          value={config.corsProxy}
+                          onChange={(e) => setConfig({ ...config, corsProxy: e.target.value })}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-[11px] text-zinc-400"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2.5 px-4 rounded-lg shadow-md transition-all text-sm"
+                      >
+                        Guardar Configuración
+                      </button>
+
+                    </form>
+                  </div>
+
+                  {/* LISTADO DE GESTIÓN DE ÓRDENES */}
+                  <div className="lg:col-span-2 bg-zinc-900 rounded-2xl p-6 border border-zinc-800 space-y-4">
+                    <div className="border-b border-zinc-800 pb-3 flex justify-between items-center">
+                      <h3 className="font-extrabold text-lg text-white">Órdenes de Clientes</h3>
+                      <button 
+                        onClick={loadOrders}
+                        className="text-xs bg-zinc-950 hover:bg-zinc-800 text-zinc-400 border border-zinc-850 px-3 py-1 rounded-lg flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" /> Actualizar
+                      </button>
+                    </div>
+
+                    {orders.length === 0 ? (
+                      <div className="py-20 text-center text-zinc-500">
+                        No hay ninguna orden generada hasta el momento.
+                      </div>
+                    ) : (
+                      <div className="space-y-4 max-h-[650px] overflow-y-auto pr-1">
+                        {orders.map((order) => (
+                          <div 
+                            key={order.orderId}
+                            className={`p-4 rounded-xl border space-y-4 transition-all ${
+                              order.status === 'pending_payment' ? 'bg-amber-950/10 border-amber-500/40' :
+                              order.status === 'processing' ? 'bg-indigo-950/10 border-indigo-500/40' :
+                              'bg-zinc-950 border-zinc-850'
+                            }`}
+                          >
+                            {/* Fila superior de info básica */}
+                            <div className="flex flex-wrap justify-between items-start gap-2">
+                              <div>
+                                <span className="font-mono text-xs font-extrabold text-violet-400 bg-violet-900/10 border border-violet-500/20 px-2.5 py-1 rounded-lg">
+                                  {order.orderId}
+                                </span>
+                                <span className="text-[10px] text-zinc-500 ml-2">
+                                  {new Date(order.createdAt).toLocaleString()}
+                                </span>
+                              </div>
+
+                              <div className="flex gap-1.5">
+                                <span className="text-[10px] bg-zinc-900 px-2.5 py-1 rounded-full font-bold text-zinc-400 border border-zinc-800 uppercase">
+                                  {order.paymentMethod}
+                                </span>
+                                <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase border ${
+                                  order.status === 'pending_payment' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                  order.status === 'processing' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' :
+                                  order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                                  'bg-zinc-800 text-zinc-400 border-zinc-700'
+                                }`}>
+                                  {order.status}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Contenido del Pedido */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2 border-t border-zinc-900">
+                              <div className="space-y-1">
+                                <span className="text-zinc-500 font-semibold block">Servicio SMM</span>
+                                <p className="font-bold text-zinc-200 line-clamp-1">{order.serviceName}</p>
+                                <span className="text-[10px] text-zinc-400 block">ID Original SMM24h: {order.serviceId}</span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-zinc-500 font-semibold block">Enlace Destino</span>
+                                <a href={order.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet-400 hover:underline flex items-center gap-1 max-w-[200px] truncate">
+                                  {order.link} <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                                </a>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                              <div>
+                                <span className="text-zinc-500 font-semibold block">Cantidad</span>
+                                <p className="font-bold text-zinc-200">{order.quantity} uds</p>
+                              </div>
+                              <div>
+                                <span className="text-zinc-500 font-semibold block">Costo Mayorista</span>
+                                <p className="font-semibold text-zinc-400">${order.costPrice.toFixed(2)} USD</p>
+                              </div>
+                              <div>
+                                <span className="text-zinc-500 font-semibold block">Precio Venta (Cliente)</span>
+                                <p className="font-bold text-emerald-400">${order.sellPrice.toFixed(2)} USD</p>
+                              </div>
+                              <div>
+                                <span className="text-zinc-500 font-semibold block">Ganancia Neta</span>
+                                <p className="font-black text-violet-400">${(order.sellPrice - order.costPrice).toFixed(2)} USD</p>
+                              </div>
+                            </div>
+
+                            {/* Información de Proveedor SMM24H si ya fue aprobada */}
+                            {order.providerOrderId && (
+                              <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-850 flex justify-between items-center text-xs">
+                                <div>
+                                  <span className="text-zinc-500 block text-[10px] uppercase font-bold">Distribuidor Oficial SMM24h</span>
+                                  <p className="font-semibold">
+                                    ID Pedido: <strong className="font-mono text-zinc-200">{order.providerOrderId}</strong>
+                                    <span className="mx-2 text-zinc-600">|</span> 
+                                    Estado SMM: <strong className="text-indigo-400">{order.providerStatus}</strong>
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => handleCheckProviderStatus(order)}
+                                  className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 rounded-md transition-all text-[11px] font-bold flex items-center gap-1"
+                                >
+                                  <RefreshCw className="w-3 h-3" />
+                                  <span>Chequear</span>
+                                </button>
+                              </div>
+                            )}
+
+                            {/* ACCIONES DE ADMINISTRACIÓN EN LA ORDEN */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-900">
+                              
+                              {/* Botón Principal: Confirmar Pago & Enviar a API Proveedor */}
+                              {order.status === 'pending_payment' ? (
+                                <button
+                                  onClick={() => handleApproveOrder(order)}
+                                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md flex items-center gap-1.5"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span>Confirmar Pago y Activar SMM</span>
+                                </button>
+                              ) : (
+                                <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                                  <ShieldCheck className="w-4 h-4" />
+                                  <span>Pago Acreditado & Activado</span>
+                                </div>
+                              )}
+
+                              {/* Acciones de estado manual */}
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleManualStatusChange(order.orderId, 'completed')}
+                                  className="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 text-[10px] text-zinc-400 hover:text-white rounded border border-zinc-800 font-medium"
+                                  title="Marcar como Completado"
+                                >
+                                  Marcar Completado
+                                </button>
+                                <button
+                                  onClick={() => handleManualStatusChange(order.orderId, 'failed')}
+                                  className="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 text-[10px] text-rose-400/80 hover:text-rose-400 rounded border border-zinc-800 font-medium"
+                                  title="Marcar como Cancelado"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+
+                            </div>
+
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
           </div>
         )}
 
       </main>
 
-      <footer className="bg-slate-900 border-t border-slate-850 text-slate-500 text-xs py-8 mt-12 text-center">
-        <p>© 2026 ComprarSeguidoresYa. Todos los derechos reservados. Desarrollado con tecnología de marca blanca para reventa automatizada.</p>
+      {/* --- PIE DE PÁGINA --- */}
+      <footer className="bg-zinc-950 border-t border-zinc-900 py-6 px-4 text-center text-xs text-zinc-500 space-y-2 mt-12">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p>© {new Date().getFullYear()} SMM BOOST. Todos los derechos reservados.</p>
+          <div className="flex gap-4">
+            <span className="hover:text-zinc-300 cursor-pointer" onClick={() => setActiveTab('client')}>Tienda</span>
+            <span className="hover:text-zinc-300 cursor-pointer" onClick={() => setActiveTab('track')}>Seguimiento</span>
+            <span className="hover:text-zinc-300 cursor-pointer" onClick={() => setActiveTab('admin')}>Soporte Administrativo</span>
+          </div>
+        </div>
       </footer>
+
+      {/* ==================== MODAL DE CHECKOUT & PAGO MANUAL ==================== */}
+      {showCheckoutModal && createdOrderDetails && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex justify-center items-center p-4 overflow-y-auto">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 max-w-lg w-full p-6 shadow-2xl animate-scaleIn space-y-6">
+            
+            <div className="flex justify-between items-start border-b border-zinc-800 pb-3">
+              <div>
+                <span className="text-[10px] bg-violet-900/40 text-violet-400 px-2.5 py-0.5 rounded-full font-bold">
+                  Orden Generada Exitosamente
+                </span>
+                <h3 className="font-extrabold text-xl text-white mt-1">Proceder al Pago</h3>
+              </div>
+              <button 
+                onClick={() => setShowCheckoutModal(false)}
+                className="text-zinc-500 hover:text-white"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Detalles Rápidos del Pedido */}
+            <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-zinc-500">ID de Orden Secreta:</span>
+                <span className="font-bold text-violet-400 font-mono flex items-center gap-1.5">
+                  {createdOrderDetails.orderId}
+                  <button onClick={() => copyToClipboard(createdOrderDetails.orderId)} className="text-zinc-500 hover:text-zinc-300">
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Servicio:</span>
+                <span className="font-semibold text-zinc-300 max-w-[200px] truncate">{createdOrderDetails.serviceName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Monto Final a Transferir:</span>
+                <span className="font-black text-emerald-400 text-sm">${createdOrderDetails.sellPrice.toFixed(2)} USD</span>
+              </div>
+            </div>
+
+            {/* INSTRUCCIONES ESPECÍFICAS SEGÚN EL MÉTODO DE PAGO */}
+            {createdOrderDetails.paymentMethod === 'paypal' ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-950/20 border border-blue-500/20 rounded-xl space-y-3">
+                  <h4 className="font-bold text-blue-400 text-sm flex items-center gap-1.5">
+                    💳 Instrucciones para Pago con PayPal
+                  </h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Envía el importe exacto a la siguiente dirección de correo PayPal. Recuerda realizar el pago en modalidad <strong>"Enviar dinero a amigos y familiares"</strong> para evitar comisiones extra.
+                  </p>
+                  
+                  <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 flex justify-between items-center">
+                    <span className="text-xs text-zinc-300 select-all font-semibold">{config.paypalEmail}</span>
+                    <button 
+                      onClick={() => copyToClipboard(config.paypalEmail)}
+                      className="text-xs text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" /> Copiar Correo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-950/20 border border-yellow-500/20 rounded-xl space-y-3">
+                  <h4 className="font-bold text-yellow-500 text-sm flex items-center gap-1.5">
+                    🔸 Instrucciones para Binance Pay
+                  </h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Realiza el envío inmediato de <strong>{createdOrderDetails.sellPrice.toFixed(2)} USDT</strong> mediante Binance Pay utilizando el siguiente ID de Pago. No tiene comisiones adicionales.
+                  </p>
+                  
+                  <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block">Binance ID</span>
+                      <span className="text-xs text-zinc-300 font-mono font-bold select-all">{config.binancePayId}</span>
+                    </div>
+                    <button 
+                      onClick={() => copyToClipboard(config.binancePayId)}
+                      className="text-xs text-yellow-500 hover:underline flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" /> Copiar ID
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ADVERTENCIA FINAL */}
+            <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-850 flex items-start gap-3">
+              <QrCode className="w-10 h-10 text-violet-400 flex-shrink-0" />
+              <div className="text-[11px] text-zinc-400 leading-relaxed">
+                <strong className="text-white block">Paso Final Obligatorio:</strong>
+                Una vez realizado el envío, presiona el botón inferior para abrir un chat de WhatsApp con nuestro agente de ventas. <strong>Envía el comprobante junto al ID de orden generado.</strong> Tu orden se activará al instante.
+              </div>
+            </div>
+
+            {/* BOTÓN PRINCIPAL DE NOTIFICACIÓN WHATSAPP */}
+            <button
+              onClick={handleConfirmOnWhatsApp}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-4 rounded-xl flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-emerald-900/20 text-base"
+            >
+              <MessageCircle className="w-5.5 h-5.5" />
+              <span>Pagar y Notificar en WhatsApp</span>
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
