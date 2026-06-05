@@ -42,7 +42,7 @@ import {
   Info
 } from 'lucide-react';
 
-// --- CONFIGURACIÓN DE FIREBASE (Autodetectada o configurada por el entorno) ---
+// --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
   ? JSON.parse(__firebase_config) 
   : {
@@ -84,15 +84,19 @@ export default function App() {
   const [apiBalance, setApiBalance] = useState("0.00");
   const [isApiConnected, setIsApiConnected] = useState(false);
 
+  // NUEVOS ESTADOS DE NAVEGACIÓN Y FILTRADO SIMPLIFICADO
+  const [selectedPlatform, setSelectedPlatform] = useState('Instagram');
+  const [searchTerm, setSearchTerm] = useState('');
+
   // Parámetros de Configuración del Reseller (Guardados en Firebase)
   const [config, setConfig] = useState({
-    smmApiKey: '',
+    smmApiKey: 'b1126e2dde28c3da5a28b2021729bc18', // Tu API Key provista cargada por defecto
     whatsappNumber: '+573000000000', // Reemplazar con tu número
     markupPercent: 50, // 50% de ganancia por defecto
     paypalEmail: 'tu-correo@paypal.com',
     binancePayId: '123456789',
-    adminPin: '1234',
-    corsProxy: 'https://api.allorigins.win/raw?url=' // Proxy para evitar bloqueos CORS en producción Vercel
+    adminPin: '3108', // PIN modificado según tu solicitud a 3108
+    corsProxy: 'https://api.allorigins.win/raw?url=' // Proxy para evitar bloqueos CORS
   });
 
   // Interfaz de Usuario
@@ -154,9 +158,6 @@ export default function App() {
   useEffect(() => {
     const uniqueCategories = [...new Set(services.map(s => s.category))];
     setCategories(uniqueCategories);
-    if (uniqueCategories.length > 0 && !selectedCategory) {
-      setSelectedCategory(uniqueCategories[0]);
-    }
   }, [services]);
 
   // Cada vez que cambia la cantidad de pedido o el servicio seleccionado, se calcula el precio
@@ -176,6 +177,18 @@ export default function App() {
     }
   }, [selectedService, orderQuantity, config.markupPercent]);
 
+  // FUNCIÓN AUXILIAR PARA DETERMINAR LA RED SOCIAL DESDE LA CATEGORÍA
+  const getPlatformFromCategory = (catName) => {
+    const lower = catName.toLowerCase();
+    if (lower.includes('instagram') || lower.includes('ig')) return 'Instagram';
+    if (lower.includes('tiktok') || lower.includes('tk')) return 'TikTok';
+    if (lower.includes('youtube') || lower.includes('yt')) return 'YouTube';
+    if (lower.includes('facebook') || lower.includes('fb')) return 'Facebook';
+    if (lower.includes('telegram') || lower.includes('tg')) return 'Telegram';
+    if (lower.includes('twitter') || lower.includes('x ')) return 'Twitter / X';
+    return 'Otros';
+  };
+
   // Cargar configuración de base de datos pública
   const loadConfig = async () => {
     try {
@@ -184,27 +197,31 @@ export default function App() {
       if (configSnap.exists()) {
         const data = configSnap.data();
         setConfig(prev => ({ ...prev, ...data }));
-        // Si tenemos la API Key guardada, intentamos cargar los servicios en tiempo real
-        if (data.smmApiKey) {
-          fetchServicesFromApi(data.smmApiKey, data.corsProxy);
-          fetchBalanceFromApi(data.smmApiKey, data.corsProxy);
+        
+        const activeApiKey = data.smmApiKey || config.smmApiKey;
+        const activeProxy = data.corsProxy || config.corsProxy;
+        if (activeApiKey) {
+          fetchServicesFromApi(activeApiKey, activeProxy);
+          fetchBalanceFromApi(activeApiKey, activeProxy);
         }
       } else {
-        // Inicializar configuración por defecto si no existe
         await setDoc(configDocRef, config);
+        if (config.smmApiKey) {
+          fetchServicesFromApi(config.smmApiKey, config.corsProxy);
+          fetchBalanceFromApi(config.smmApiKey, config.corsProxy);
+        }
       }
     } catch (e) {
       console.error("Error loading config:", e);
     }
   };
 
-  // Cargar órdenes desde Firestore (Regla 2: Solo consulta básica)
+  // Cargar órdenes desde Firestore
   const loadOrders = async () => {
     try {
       const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
       const snap = await getDocs(ordersColRef);
       const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Ordenar en memoria (Regla 2)
       list.sort((a, b) => b.createdAt - a.createdAt);
       setOrders(list);
     } catch (e) {
@@ -260,7 +277,6 @@ export default function App() {
       const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main');
       await setDoc(configDocRef, config);
       showToast("Configuración guardada de manera segura", "success");
-      // Recargar datos actualizados
       fetchServicesFromApi(config.smmApiKey, config.corsProxy);
       fetchBalanceFromApi(config.smmApiKey, config.corsProxy);
     } catch (err) {
@@ -302,23 +318,19 @@ export default function App() {
       costPrice: costPrice,
       sellPrice: calculatedPrice,
       paymentMethod: paymentMethod,
-      status: 'pending_payment', // 'pending_payment', 'processing', 'completed', 'failed'
+      status: 'pending_payment',
       createdAt: Date.now(),
       providerOrderId: null,
       providerStatus: 'Aún no enviado a proveedor'
     };
 
     try {
-      // Guardar en Firestore pública (Regla 1)
       const orderDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
       await setDoc(orderDocRef, newOrder);
       
       setCreatedOrderDetails(newOrder);
       setShowCheckoutModal(true);
-      
-      // Añadir localmente al inicio de la lista
       setOrders(prev => [newOrder, ...prev]);
-      
       showToast("¡Orden creada! Procede con el pago para activarla.", "success");
     } catch (err) {
       console.error(err);
@@ -326,7 +338,6 @@ export default function App() {
     }
   };
 
-  // Redirección directa a WhatsApp con formato premium de Factura
   const handleConfirmOnWhatsApp = () => {
     if (!createdOrderDetails) return;
     
@@ -346,13 +357,11 @@ export default function App() {
     window.open(waUrl, '_blank');
     setShowCheckoutModal(false);
     
-    // Limpiar formulario cliente
     setOrderLink('');
     setOrderQuantity('');
     setSelectedService(null);
   };
 
-  // --- 5. BÚSQUEDA Y SEGUIMIENTO DE ORDENES POR EL CLIENTE ---
   const handleTrackOrder = (e) => {
     e.preventDefault();
     if (!orderTrackingId.trim()) {
@@ -369,7 +378,6 @@ export default function App() {
     }
   };
 
-  // --- 6. PANEL ADMIN - APROBACIÓN DE PEDIDO Y ENVÍO AUTOMÁTICO A SMM24H ---
   const handleApproveOrder = async (orderToApprove) => {
     if (!config.smmApiKey) {
       showToast("Debes ingresar y guardar tu API Key de SMM24h primero.", "error");
@@ -379,7 +387,6 @@ export default function App() {
     try {
       showToast(`Procesando orden ${orderToApprove.orderId}...`, "info");
       
-      // URL del Endpoint para Añadir Pedidos SMM24h
       const targetUrl = `https://smm24h.com/api/v2?key=${config.smmApiKey}&action=add&service=${orderToApprove.serviceId}&link=${encodeURIComponent(orderToApprove.link)}&quantity=${orderToApprove.quantity}`;
       const url = config.corsProxy ? `${config.corsProxy}${encodeURIComponent(targetUrl)}` : targetUrl;
 
@@ -389,21 +396,18 @@ export default function App() {
       const apiResult = await response.json();
       
       if (apiResult && apiResult.order) {
-        // Pedido creado con éxito en el proveedor
         const updatedFields = {
           status: 'processing',
           providerOrderId: apiResult.order,
-          providerStatus: 'Pending' // Estado inicial del proveedor
+          providerStatus: 'Pending'
         };
 
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderToApprove.orderId);
         await updateDoc(docRef, updatedFields);
 
-        // Actualizar lista local
         setOrders(prev => prev.map(o => o.orderId === orderToApprove.orderId ? { ...o, ...updatedFields } : o));
-        
         showToast(`¡Orden confirmada con éxito! ID Proveedor: ${apiResult.order}`, "success");
-        fetchBalanceFromApi(config.smmApiKey, config.corsProxy); // Recargar balance tras gasto
+        fetchBalanceFromApi(config.smmApiKey, config.corsProxy);
       } else if (apiResult.error) {
         showToast(`API Proveedor Error: ${apiResult.error}`, "error");
       } else {
@@ -415,7 +419,6 @@ export default function App() {
     }
   };
 
-  // Consultar estado en tiempo real en la API del proveedor
   const handleCheckProviderStatus = async (orderToCheck) => {
     if (!config.smmApiKey || !orderToCheck.providerOrderId) return;
 
@@ -428,7 +431,6 @@ export default function App() {
       const apiResult = await response.json();
 
       if (apiResult && !apiResult.error) {
-        // Mapear estados tradicionales de SMM a nuestro sistema
         let mappedStatus = 'processing';
         if (apiResult.status === 'Completed') mappedStatus = 'completed';
         if (apiResult.status === 'Canceled' || apiResult.status === 'Failed') mappedStatus = 'failed';
@@ -451,7 +453,6 @@ export default function App() {
     }
   };
 
-  // Cambiar manualmente el estado (Si el admin realiza el trabajo manual o cancela)
   const handleManualStatusChange = async (orderId, newStatus) => {
     try {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
@@ -463,7 +464,6 @@ export default function App() {
     }
   };
 
-  // Autenticación de Administrador local (con código PIN)
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPinInput === config.adminPin) {
@@ -474,7 +474,6 @@ export default function App() {
     }
   };
 
-  // Copiar ID de Orden al Portapapeles de forma segura
   const copyToClipboard = (text) => {
     const tempInput = document.createElement("input");
     tempInput.value = text;
@@ -493,6 +492,18 @@ export default function App() {
       </div>
     );
   }
+
+  // --- OBTENER CATEGORÍAS FILTRADAS POR LA PLATAFORMA SELECCIONADA ---
+  const filteredCategories = categories.filter(cat => getPlatformFromCategory(cat) === selectedPlatform);
+
+  // --- OBTENER SERVICIOS DE LA CATEGORÍA SELECCIONADA O FILTRADOS POR BÚSQUEDA ---
+  const displayServices = services.filter(s => {
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      return s.name.toLowerCase().includes(term) || s.category.toLowerCase().includes(term) || String(s.service).includes(term);
+    }
+    return s.category === selectedCategory;
+  });
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-violet-500/30 selection:text-white">
@@ -557,7 +568,10 @@ export default function App() {
             </button>
 
             <button 
-              onClick={() => setActiveTab('admin')}
+              onClick={() => {
+                setActiveTab('admin');
+                setAdminPinInput('');
+              }}
               className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 ${
                 activeTab === 'admin' 
                   ? 'bg-zinc-800 text-violet-400 border border-violet-500/30 shadow-sm' 
@@ -575,7 +589,7 @@ export default function App() {
       {/* --- SECCIÓN PRINCIPAL DE CONTENIDO --- */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
 
-        {/* ==================== VISTA CLIENTE: TIENDA ==================== */}
+        {/* ==================== VISTA CLIENTE: TIENDA SIMPLIFICADA Y PROFESIONAL ==================== */}
         {activeTab === 'client' && (
           <div className="space-y-8 animate-fadeIn">
             
@@ -584,230 +598,365 @@ export default function App() {
               <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/10 rounded-full filter blur-[80px] pointer-events-none"></div>
               <div className="max-w-3xl space-y-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                  ⚡ Entrega de inmediato a tu perfil
+                  ⚡ Entrega automática y segura
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                  Impulsa la presencia de tus Redes Sociales al instante
+                  La forma más rápida de crecer en redes sociales
                 </h2>
                 <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-                  Adquiere seguidores, me gusta, vistas y comentarios reales con la mayor tasa de retención del mercado. 
-                  Pagos seguros usando <strong className="text-violet-300">PayPal</strong> y <strong className="text-emerald-400">Binance Pay</strong> con soporte y validación 24/7 por WhatsApp.
+                  Adquiere seguidores, likes y vistas reales de alta retención. 
+                  Pagos verificados por <strong className="text-violet-300">PayPal</strong> y <strong className="text-emerald-400">Binance Pay</strong> con confirmación inmediata por WhatsApp.
                 </p>
                 
                 {/* Garantías de confianza */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-zinc-800 text-zinc-400 text-xs">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-violet-400" />
-                    <span>Garantía de Servicio</span>
+                    <span>Garantía Anti-Caída</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-violet-400" />
-                    <span>Inicio en Minutos</span>
+                    <span>Inicio en 10 Minutos</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-violet-400" />
-                    <span>Perfiles Reales</span>
+                    <span>Perfiles Orgánicos</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-violet-400" />
-                    <span>Soporte WhatsApp 24/7</span>
+                    <span>Soporte 24/7 en Vivo</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Selector de Categorías */}
-            <div>
-              <label className="block text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-violet-400" /> Selecciona la Red Social o Servicio
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setSelectedCategory(cat);
-                      setSelectedService(null);
-                    }}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                      selectedCategory === cat 
-                        ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/20' 
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Grid de Servicios en la Categoría */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* GRID PRINCIPAL: WIZARD A LA IZQUIERDA, LIVE INVOICE A LA DERECHA */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
-              {/* Tarjetas de Servicios de la categoría seleccionada */}
-              <div className="md:col-span-2 space-y-3">
-                <h3 className="text-sm font-bold text-zinc-400 tracking-wider uppercase mb-2">Servicios Disponibles</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {services
-                    .filter(s => s.category === selectedCategory)
-                    .map((service) => {
-                      const calculatedMarkupRate = parseFloat(service.rate) * (1 + config.markupPercent / 100);
-                      const isSelected = selectedService?.service === service.service;
-                      
-                      return (
-                        <div
-                          key={service.service}
-                          onClick={() => setSelectedService(service)}
-                          className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                            isSelected 
-                              ? 'bg-gradient-to-r from-violet-950/30 to-zinc-900 border-violet-500 shadow-[0_0_15px_rgba(124,58,237,0.1)]' 
-                              : 'bg-zinc-900/60 border-zinc-850 hover:bg-zinc-900 hover:border-zinc-750'
-                          }`}
-                        >
-                          <div className="space-y-1 flex-1">
-                            <span className="text-[10px] uppercase tracking-wider bg-violet-900/40 text-violet-400 px-2.5 py-0.5 rounded-full font-bold">
-                              ID: {service.service}
-                            </span>
-                            <h4 className="font-bold text-zinc-100 text-sm sm:text-base">{service.name}</h4>
-                            <div className="flex items-center gap-4 text-xs text-zinc-400 pt-1">
-                              <span>Mínimo: <strong className="text-zinc-300">{service.min}</strong></span>
-                              <span>Máximo: <strong className="text-zinc-300">{service.max}</strong></span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex sm:flex-col items-end justify-between sm:justify-center border-t sm:border-t-0 border-zinc-800 pt-2 sm:pt-0">
-                            <span className="text-xs text-zinc-400">Por cada 1,000</span>
-                            <span className="text-lg font-black text-violet-400">
-                              ${calculatedMarkupRate.toFixed(2)} USD
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Formulario Calculador & Creación de Orden */}
-              <div className="bg-zinc-900/90 rounded-2xl p-6 border border-zinc-800 space-y-6 h-fit sticky top-24 shadow-xl">
-                <div className="border-b border-zinc-800 pb-4">
-                  <h3 className="font-extrabold text-lg text-white">Configurar Pedido</h3>
-                  <p className="text-xs text-zinc-400 mt-1">Completa los campos para procesar la orden inmediatamente</p>
+              {/* COLUMNA IZQUIERDA: CONFIGURADOR WIZARD (7 COLS) */}
+              <div className="lg:col-span-7 bg-zinc-900/60 rounded-2xl border border-zinc-850 p-6 sm:p-8 space-y-8 backdrop-blur-md">
+                
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Sliders className="w-5 h-5 text-violet-500" />
+                    Configurador Inteligente
+                  </h3>
+                  <p className="text-zinc-400 text-xs mt-1">Sigue los sencillos pasos para diseñar tu pedido a medida.</p>
                 </div>
 
-                {selectedService ? (
-                  <form onSubmit={handlePlaceOrder} className="space-y-5">
-                    
-                    {/* Resumen del Servicio Seleccionado */}
-                    <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-850 space-y-1 text-xs">
-                      <span className="text-zinc-500">Servicio Seleccionado:</span>
-                      <p className="font-bold text-violet-400 line-clamp-2">{selectedService.name}</p>
-                      <div className="flex justify-between text-[11px] pt-2 border-t border-zinc-900 mt-2 text-zinc-400">
-                        <span>Límites: {selectedService.min} - {selectedService.max}</span>
-                        <span>Costo: ${ (parseFloat(selectedService.rate) * (1 + config.markupPercent / 100)).toFixed(2) } por 1K</span>
-                      </div>
-                    </div>
-
-                    {/* Campo para el Enlace de Perfil */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                        Enlace o Nombre de Usuario
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="ej: https://instagram.com/tuperfil"
-                        value={orderLink}
-                        onChange={(e) => setOrderLink(e.target.value)}
-                        required
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all duration-200"
-                      />
-                      <span className="text-[10px] text-zinc-500 block">Asegúrate de que la cuenta esté en modo PÚBLICO.</span>
-                    </div>
-
-                    {/* Campo para la Cantidad */}
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-center">
-                        <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                          Cantidad a Solicitar
-                        </label>
-                        <span className="text-[11px] text-zinc-400">
-                          Rango: {selectedService.min} - {selectedService.max}
-                        </span>
-                      </div>
-                      <input
-                        type="number"
-                        min={selectedService.min}
-                        max={selectedService.max}
-                        placeholder={`Mínimo ${selectedService.min}`}
-                        value={orderQuantity}
-                        onChange={(e) => setOrderQuantity(e.target.value)}
-                        required
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all duration-200"
-                      />
-                    </div>
-
-                    {/* Selección de Método de Pago */}
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                        Método de Pago Preferido
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('paypal')}
-                          className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs font-bold ${
-                            paymentMethod === 'paypal' 
-                              ? 'bg-blue-950/20 border-blue-500 text-blue-400' 
-                              : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:border-zinc-700'
-                          }`}
-                        >
-                          <span className="text-sm font-black italic text-blue-500">PayPal</span>
-                          <span className="text-[10px] opacity-80">Manual</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod('binance')}
-                          className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs font-bold ${
-                            paymentMethod === 'binance' 
-                              ? 'bg-yellow-950/20 border-yellow-500 text-yellow-500' 
-                              : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:border-zinc-700'
-                          }`}
-                        >
-                          <span className="text-sm font-black tracking-tight text-yellow-500">BINANCE PAY</span>
-                          <span className="text-[10px] opacity-80">Instantáneo (USDT)</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Resumen del Precio Final */}
-                    <div className="p-4 bg-zinc-950 rounded-xl border border-zinc-850 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-zinc-400 text-xs">Precio unitario:</span>
-                        <span className="text-zinc-200 text-xs">${(parseFloat(selectedService.rate) * (1 + config.markupPercent / 100) / 1000).toFixed(4)} USD / ud</span>
-                      </div>
-                      <div className="flex justify-between items-end pt-2 border-t border-zinc-900">
-                        <span className="text-zinc-400 text-xs font-semibold">Total a pagar:</span>
-                        <span className="text-2xl font-black text-white">${calculatedPrice.toFixed(2)} <span className="text-xs text-zinc-400">USD</span></span>
-                      </div>
-                    </div>
-
-                    {/* Botón de envío */}
-                    <button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-violet-600/25 flex items-center justify-center gap-2 transition-all duration-200"
+                {/* BUSCADOR RÁPIDO (INTEGRADO PARA UN LOOK PRO) */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <Search className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="¿Buscas algo específico? Escribe aquí (ej: Seguidores latinos, YouTube views)..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      if (e.target.value) {
+                        setSelectedService(null);
+                      }
+                    }}
+                    className="w-full bg-zinc-950/80 border border-zinc-800 focus:border-violet-500 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                  />
+                  {searchTerm && (
+                    <button 
+                      onClick={() => setSearchTerm('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-zinc-500 hover:text-white"
                     >
-                      <span>Generar Orden de Compra</span>
-                      <ArrowRight className="w-4 h-4" />
+                      Limpiar
                     </button>
+                  )}
+                </div>
 
-                  </form>
+                {/* SI NO HAY BÚSQUEDA ACTIVA, MOSTRAR EL PASO A PASO */}
+                {!searchTerm ? (
+                  <div className="space-y-6">
+                    
+                    {/* PASO 1: SELECCIONAR PLATAFORMA */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-zinc-800 text-[11px] flex items-center justify-center font-bold text-violet-400">1</span>
+                        Selecciona la Plataforma
+                      </label>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                        {[
+                          { name: 'Instagram', color: 'from-pink-600 to-amber-600', activeBg: 'border-pink-500 text-white bg-pink-500/10' },
+                          { name: 'TikTok', color: 'from-teal-600 to-indigo-600', activeBg: 'border-teal-500 text-white bg-teal-500/10' },
+                          { name: 'YouTube', color: 'from-red-600 to-rose-600', activeBg: 'border-red-500 text-white bg-red-500/10' },
+                          { name: 'Facebook', color: 'from-blue-600 to-indigo-600', activeBg: 'border-blue-500 text-white bg-blue-500/10' },
+                          { name: 'Telegram', color: 'from-cyan-500 to-blue-500', activeBg: 'border-cyan-500 text-white bg-cyan-500/10' },
+                          { name: 'Otros', color: 'from-zinc-600 to-zinc-700', activeBg: 'border-violet-500 text-white bg-violet-500/10' }
+                        ].map((plat) => {
+                          const isActive = selectedPlatform === plat.name;
+                          return (
+                            <button
+                              key={plat.name}
+                              onClick={() => {
+                                setSelectedPlatform(plat.name);
+                                setSelectedCategory('');
+                                setSelectedService(null);
+                              }}
+                              className={`py-3 px-2 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-1.5 ${
+                                isActive 
+                                  ? `${plat.activeBg} shadow-[0_0_15px_rgba(124,58,237,0.15)] scale-[1.02]` 
+                                  : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:text-zinc-200 hover:border-zinc-750'
+                              }`}
+                            >
+                              <div className={`w-2 h-2 rounded-full bg-gradient-to-tr ${plat.color}`}></div>
+                              <span>{plat.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* PASO 2: SELECCIONAR CATEGORÍA DE SERVICIO */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-zinc-800 text-[11px] flex items-center justify-center font-bold text-violet-400">2</span>
+                        Tipo de Servicio
+                      </label>
+                      
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => {
+                          setSelectedCategory(e.target.value);
+                          setSelectedService(null);
+                        }}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all cursor-pointer"
+                      >
+                        <option value="">-- Elige qué deseas aumentar (Seguidores, Likes, etc) --</option>
+                        {filteredCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
                 ) : (
-                  <div className="py-12 text-center text-zinc-500 flex flex-col items-center gap-3">
-                    <ShoppingBag className="w-12 h-12 text-zinc-700 stroke-[1.5]" />
-                    <p className="text-sm">Selecciona uno de los servicios del listado izquierdo para iniciar la cotización.</p>
+                  <div className="p-3 bg-violet-950/10 border border-violet-500/20 rounded-xl text-xs text-violet-300 flex items-center gap-2">
+                    <Info className="w-4 h-4 flex-shrink-0" />
+                    <span>Estás usando el buscador rápido. Mostrando resultados coincidentes.</span>
                   </div>
                 )}
 
+                {/* PASO 3: DETALLE DEL PAQUETE / SERVICIO ESPECÍFICO */}
+                {(selectedCategory || searchTerm) && (
+                  <div className="space-y-6 animate-fadeIn">
+                    
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-zinc-800 text-[11px] flex items-center justify-center font-bold text-violet-400">
+                          {searchTerm ? '1' : '3'}
+                        </span>
+                        Selecciona el Paquete de Calidad
+                      </label>
+
+                      {displayServices.length === 0 ? (
+                        <p className="text-xs text-zinc-500 bg-zinc-950 p-4 rounded-xl border border-zinc-850">
+                          No se encontraron servicios disponibles en este momento.
+                        </p>
+                      ) : (
+                        <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                          {displayServices.map((service) => {
+                            const calculatedMarkupRate = parseFloat(service.rate) * (1 + config.markupPercent / 100);
+                            const isSelected = selectedService?.service === service.service;
+                            return (
+                              <div
+                                key={service.service}
+                                onClick={() => setSelectedService(service)}
+                                className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between gap-4 transition-all ${
+                                  isSelected 
+                                    ? 'bg-violet-950/20 border-violet-500 shadow-md' 
+                                    : 'bg-zinc-950 border-zinc-850 hover:bg-zinc-900 hover:border-zinc-800'
+                                }`}
+                              >
+                                <div className="space-y-0.5">
+                                  <span className="text-[9px] font-bold text-violet-400 bg-violet-900/20 px-2 py-0.5 rounded-full uppercase">
+                                    ID: {service.service}
+                                  </span>
+                                  <h4 className="font-bold text-zinc-200 text-xs sm:text-sm line-clamp-1">{service.name}</h4>
+                                  <p className="text-[10px] text-zinc-500">Límites: {service.min} - {service.max} unidades</p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <span className="text-[9px] text-zinc-500 block">Por cada 1K</span>
+                                  <span className="font-black text-violet-400 text-xs sm:text-sm">
+                                    ${calculatedMarkupRate.toFixed(2)} USD
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )}
+
+                {/* PASO 4: ENLACE Y CANTIDAD */}
+                {selectedService && (
+                  <div className="space-y-4 pt-4 border-t border-zinc-800/60 animate-fadeIn">
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                          Enlace o Usuario Destino
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ej: https://instagram.com/tu_perfil"
+                          value={orderLink}
+                          onChange={(e) => setOrderLink(e.target.value)}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            Cantidad a Enviar
+                          </label>
+                          <span className="text-[10px] text-zinc-500 font-semibold">
+                            Límites: {selectedService.min} - {selectedService.max}
+                          </span>
+                        </div>
+                        <input
+                          type="number"
+                          min={selectedService.min}
+                          max={selectedService.max}
+                          placeholder={`Ej: ${selectedService.min}`}
+                          value={orderQuantity}
+                          onChange={(e) => setOrderQuantity(e.target.value)}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
+                        />
+                      </div>
+
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+
+              {/* COLUMNA DERECHA: FACTURA / LIVE INVOICE INTERACTIVA (5 COLS) */}
+              <div className="lg:col-span-5">
+                <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 space-y-6 h-fit sticky top-24 shadow-2xl overflow-hidden relative">
+                  
+                  {/* Decoración del borde superior de la factura */}
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600"></div>
+
+                  <div className="border-b border-zinc-800 pb-4">
+                    <span className="text-[9px] uppercase tracking-widest text-violet-400 font-bold block">Resumen del Pedido</span>
+                    <h3 className="font-extrabold text-xl text-white mt-1">Recibo de Compra</h3>
+                  </div>
+
+                  {selectedService ? (
+                    <form onSubmit={handlePlaceOrder} className="space-y-6">
+                      
+                      {/* Desglose de Factura Premium */}
+                      <div className="space-y-3.5 bg-zinc-950/80 rounded-xl p-4 border border-zinc-850 text-xs">
+                        
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="text-zinc-500">Servicio:</span>
+                          <span className="font-bold text-zinc-200 text-right max-w-[180px] truncate">{selectedService.name}</span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Plataforma:</span>
+                          <span className="font-semibold text-violet-400">{selectedPlatform}</span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Cantidad:</span>
+                          <span className="font-semibold text-zinc-200">
+                            {orderQuantity ? `${parseInt(orderQuantity, 10).toLocaleString()} uds` : 'Pendiente'}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Enlace de destino:</span>
+                          <span className="font-semibold text-zinc-400 truncate max-w-[150px]">
+                            {orderLink || 'No ingresado'}
+                          </span>
+                        </div>
+
+                        <div className="pt-3 border-t border-zinc-900 flex justify-between items-center text-sm font-bold">
+                          <span className="text-zinc-400">Método de Pago:</span>
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('paypal')}
+                              className={`px-3 py-1 rounded-lg border text-[10px] font-black transition-all ${
+                                paymentMethod === 'paypal'
+                                  ? 'bg-blue-950/30 border-blue-500 text-blue-400'
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+                              }`}
+                            >
+                              PAYPAL
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentMethod('binance')}
+                              className={`px-3 py-1 rounded-lg border text-[10px] font-black transition-all ${
+                                paymentMethod === 'binance'
+                                  ? 'bg-yellow-950/30 border-yellow-500 text-yellow-500'
+                                  : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+                              }`}
+                            >
+                              BINANCE
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-zinc-900 flex justify-between items-end">
+                          <span className="text-zinc-400 font-bold">Total a Transferir:</span>
+                          <div className="text-right">
+                            <span className="text-2xl font-black text-white block">
+                              ${calculatedPrice.toFixed(2)}
+                              <span className="text-xs text-zinc-400 font-normal ml-1">USD</span>
+                            </span>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* Advertencia de Garantía */}
+                      <div className="flex gap-3 text-[10px] text-zinc-400 leading-relaxed bg-zinc-950 p-3 rounded-xl border border-zinc-850">
+                        <ShieldCheck className="w-8 h-8 text-emerald-500 flex-shrink-0 stroke-[1.5]" />
+                        <div>
+                          <strong className="text-white block">Garantía Protegida</strong>
+                          Tu saldo y pedido están garantizados. El soporte te asistirá inmediatamente en tu chat tras la compra.
+                        </div>
+                      </div>
+
+                      {/* Botón de Enviar Pedido */}
+                      <button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2 transition-all duration-200"
+                      >
+                        <span>Confirmar y Pagar Ahora</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+
+                    </form>
+                  ) : (
+                    <div className="py-16 text-center text-zinc-500 flex flex-col items-center gap-3">
+                      <ShoppingBag className="w-14 h-14 text-zinc-700 stroke-[1.5]" />
+                      <p className="text-xs max-w-xs mx-auto">Selecciona la plataforma y el paquete deseado a la izquierda para generar tu cotización interactiva.</p>
+                    </div>
+                  )}
+
+                </div>
               </div>
 
             </div>
@@ -972,7 +1121,7 @@ export default function App() {
                     <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">PIN Secreto</label>
                     <input
                       type="password"
-                      placeholder="Predeterminado: 1234"
+                      placeholder="PIN predeterminado modificado"
                       value={adminPinInput}
                       onChange={(e) => setAdminPinInput(e.target.value)}
                       required
