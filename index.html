@@ -1,23 +1,15 @@
-```html
-   <!DOCTYPE html>
-   <html lang="es">
-     <head>
-       <meta charset="UTF-8" />
-       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-       <title>SMM BOOST</title>
-       <!-- Cargamos Tailwind CSS para los diseños del panel -->
-       <script src="https://cdn.tailwindcss.com"></script>
-     </head>
-     <body class="bg-zinc-950 text-zinc-100">
-       <div id="root"></div>
-       <script type="module">
-         import React from 'react';
-         import ReactDOM from 'react-dom/client';
-         import App from './smm-proxy.jsx';
-
-         ReactDOM.createRoot(document.getElementById('root')).render(
-           React.createElement(App)
-         );
-       </script>
-     </body>
-   </html>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMM BOOST</title>
+    <!-- Cargamos Tailwind CSS para los diseños del panel -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100">
+    <div id="root"></div>
+    <!-- Vite leerá este archivo para arrancar toda la aplicación -->
+    <script type="module" src="/smm-proxy.jsx"></script>
+  </body>
+</html>
