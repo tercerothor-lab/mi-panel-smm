@@ -1,506 +1,63 @@
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <title>EPIC REPAIR - Taller de Alta Especialidad Móvil & Inteligencia Artificial</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        cyber: ['Orbitron', 'sans-serif'],
-                        raj: ['Rajdhani', 'sans-serif'],
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        cyberdark: '#030712',
-                        cybercard: '#0b0f19',
-                        neoncyan: '#06b6d4',
-                        neonpurple: '#a855f7',
-                        neongreen: '#10b981',
-                        neonpink: '#ec4899',
-                    }
-                }
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              cyber: ['Orbitron', 'sans-serif'],
+              raj: ['Rajdhani', 'sans-serif'],
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+            colors: {
+              cyberdark: '#030712',
+              cybercard: '#0b0f19',
+              neoncyan: '#06b6d4',
+              neonpurple: '#a855f7',
+              neongreen: '#10b981',
+              neonpink: '#ec4899',
             }
+          }
         }
+      }
     </script>
 
     <style>
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-        @keyframes scan-laser {
-            0% { top: 0; opacity: 0; }
-            5% { opacity: 1; }
-            95% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-        @keyframes matrix-scroll {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
-        }
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        .animate-spin-slow { animation: spin-slow 2s linear infinite; }
-        .neon-glow-cyan { box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
-        .neon-glow-purple { box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
-        .neon-glow-green { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-        .text-glow { text-shadow: 0 0 8px rgba(6, 182, 212, 0.6); }
-        .text-glow-purple { text-shadow: 0 0 8px rgba(168, 85, 247, 0.6); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #030712; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
-        .glass-panel { background: rgba(11, 15, 25, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .view-transition { transition: opacity 0.4s ease-out, transform 0.4s ease-out; }
-        .mask-image-fade { mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); }
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .translate-z-10 { transform: translateZ(10px); }
-        .translate-z-30 { transform: translateZ(30px); }
-        .toast-slide { animation: slideInRight 0.3s ease-out forwards; }
-        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-        .modal-animation { animation: modalFadeIn 0.3s ease-out forwards; }
-        .product-card, .service-card { cursor: pointer; transition: all 0.3s ease; }
-        .product-card:hover, .service-card:hover { transform: translateY(-5px) scale(1.02); border-color: #06b6d4; box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); }
+      @keyframes pulse-glow {
+        0%, 100% { opacity: 0.6; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+      }
+      @keyframes scan-laser {
+        0% { top: 0; opacity: 0; }
+        5% { opacity: 1; }
+        95% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+      }
+      @keyframes matrix-scroll {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-50%); }
+      }
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      /* Nota: Si tenías más animaciones abajo de la línea 50, puedes pegarlas aquí mismo antes de cerrar el </style> */
     </style>
-</head>
-<body class="bg-cyberdark text-slate-200 font-sans min-h-screen overflow-x-hidden relative flex flex-col justify-between">
-
-    <!-- Fondo Cósmico -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-neoncyan/10 rounded-full blur-[120px]"></div>
-        <div class="absolute top-2/3 right-1/4 w-[600px] h-[600px] bg-neonpurple/10 rounded-full blur-[150px]"></div>
-    </div>
-
-    <!-- Navegación (igual que antes, omito repetir por brevedad, se incluye completa) -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('inicio')">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-neoncyan to-neonpurple flex items-center justify-center shadow-lg shadow-neoncyan/20">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                </div>
-                <div><span class="font-cyber text-xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-neoncyan to-neonpurple">EPIC</span><span class="font-cyber text-xl font-bold tracking-wider text-white">REPAIR</span></div>
-            </div>
-            <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold tracking-wide">
-                <button onclick="navigateTo('inicio')" id="nav-btn-inicio" class="nav-link-btn text-neoncyan border-b-2 border-neoncyan pb-1">Inicio</button>
-                <button onclick="navigateTo('servicios')" id="nav-btn-servicios" class="nav-link-btn text-slate-400 hover:text-white pb-1">Servicios</button>
-                <button onclick="navigateTo('ia-diagnostico')" id="nav-btn-ia-diagnostico" class="nav-link-btn text-slate-400 hover:text-white flex items-center gap-1 pb-1">Auto-Diagnóstico ✨</button>
-                <button onclick="navigateTo('productos')" id="nav-btn-productos" class="nav-link-btn text-slate-400 hover:text-white pb-1">Productos</button>
-                <button onclick="navigateTo('rastrear')" id="nav-btn-rastrear" class="nav-link-btn text-slate-400 hover:text-white pb-1">Rastrear Pedido</button>
-                <button onclick="openAdminPanel()" class="px-4 py-2 bg-slate-900 border border-slate-700 hover:border-neonpurple text-slate-300 hover:text-white rounded-lg transition-all flex items-center gap-2"><svg class="w-4 h-4 text-neonpurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>Cyber-Control</button>
-            </nav>
-            <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white focus:outline-none"><svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button>
-        </div>
-        <div id="mobile-menu" class="hidden md:hidden glass-panel border-t border-slate-800">
-            <div class="px-4 pt-2 pb-6 space-y-3">
-                <button onclick="navigateTo('inicio'); closeMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Inicio</button>
-                <button onclick="navigateTo('servicios'); closeMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Servicios</button>
-                <button onclick="navigateTo('ia-diagnostico'); closeMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-neoncyan hover:bg-slate-800">Auto-Diagnóstico ✨</button>
-                <button onclick="navigateTo('productos'); closeMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Productos</button>
-                <button onclick="navigateTo('rastrear'); closeMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Rastrear Pedido</button>
-                <hr class="border-slate-800 my-2">
-                <button onclick="openAdminPanel(); closeMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-neonpurple hover:bg-slate-800 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>Cyber-Control (Admin)</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- ================= SECCIÓN INICIO (igual, simplificada) ================= -->
-    <main id="view-inicio" class="view-transition relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex items-center w-full">
-        <section class="w-full flex flex-col lg:flex-row items-center justify-between gap-12 py-6">
-            <div class="flex-1 space-y-8 text-center lg:text-left">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neoncyan/10 border border-neoncyan/30 text-neoncyan text-xs font-bold tracking-widest font-cyber uppercase animate-pulse"><span class="w-2 h-2 rounded-full bg-neoncyan shadow-[0_0_8px_#06b6d4]"></span>Soporte Técnico Nivel Extremo</div>
-                <h1 class="font-cyber text-4xl sm:text-5xl lg:text-6xl font-black leading-none tracking-tight">REPARAMOS TU <br><span class="bg-clip-text text-transparent bg-gradient-to-r from-neoncyan via-neonpurple to-neonpink text-glow">TECNOLOGÍA</span><br>AL INSTANTE</h1>
-                <p class="text-slate-400 text-lg max-w-xl mx-auto lg:mx-0">Micro-soldadura de precisión, pantallas holográficas, baterías criogénicas y software avanzado respaldado por inteligencia artificial. No solo reparamos, resucitamos tu smartphone con calidad certificada.</p>
-                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"><button onclick="navigateTo('ia-diagnostico')" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-neoncyan to-neonpurple hover:from-neoncyan/90 hover:to-neonpurple/90 text-slate-950 hover:text-white font-cyber font-bold rounded-xl transition-all shadow-lg hover:shadow-neoncyan/20 text-center uppercase tracking-wider text-sm">Probar Diagnóstico IA ✨</button><button onclick="navigateTo('rastrear')" class="w-full sm:w-auto px-8 py-4 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-semibold rounded-xl transition-all text-center text-sm">Rastrear Pedido ⚡</button></div>
-                <div class="grid grid-cols-3 gap-4 pt-6 max-w-md mx-auto lg:mx-0 border-t border-slate-800/60"><div><div class="font-cyber text-2xl lg:text-3xl font-bold text-neoncyan tracking-tight">+15k</div><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Resucitados</div></div><div><div class="font-cyber text-2xl lg:text-3xl font-bold text-neonpurple tracking-tight">99.8%</div><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tasa de Éxito</div></div><div><div class="font-cyber text-2xl lg:text-3xl font-bold text-neongreen tracking-tight">&lt;45m</div><div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tiempo Medio</div></div></div>
-            </div>
-            <div class="flex-1 w-full max-w-md lg:max-w-none flex justify-center items-center perspective-1000" id="hero-phone-container">
-                <div id="hero-phone" class="relative w-full max-w-[280px] sm:max-w-sm aspect-[9/19] rounded-[3rem] border-[6px] border-slate-700 bg-slate-950 shadow-[0_0_40px_rgba(168,85,247,0.15)] flex flex-col justify-between overflow-hidden transition-transform duration-200 ease-out transform-style-3d">
-                    <div class="absolute -left-[6px] top-24 w-1.5 h-10 bg-slate-600 rounded-l-md"></div><div class="absolute -left-[6px] top-36 w-1.5 h-10 bg-slate-600 rounded-l-md"></div><div class="absolute -right-[6px] top-28 w-1.5 h-14 bg-slate-600 rounded-r-md"></div>
-                    <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 z-0"></div>
-                    <div class="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMwNmI2ZDQiLz48L3N2Zz4=')] z-0"></div>
-                    <div class="absolute left-0 right-0 h-0.5 bg-neoncyan shadow-[0_0_15px_#06b6d4] z-20 animate-[scan-laser_3.5s_ease-in-out_infinite]"></div>
-                    <div class="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-8 bg-black rounded-full z-30 flex items-center justify-between px-3 shadow-[0_4px_10px_rgba(0,0,0,0.5)] border border-slate-800"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border border-blue-300"></span></span><div class="w-1.5 h-1.5 rounded-full bg-slate-800"></div><span class="text-[9px] text-green-400 font-bold font-cyber tracking-widest">LIVE DB</span></div>
-                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-40 pointer-events-none rounded-[2.5rem]"></div>
-                    <div class="relative z-20 flex-1 flex flex-col justify-between pt-16 pb-6 px-4 text-center text-xs text-slate-400 transform-style-3d translate-z-10">
-                        <div class="space-y-1.5"><span class="inline-flex items-center gap-1.5 text-neoncyan font-cyber uppercase tracking-widest text-[9px] bg-neoncyan/10 px-2 py-0.5 rounded border border-neoncyan/20"><svg class="w-3 h-3 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Escáner Activo</span><h3 class="text-white font-cyber text-xl font-black tracking-wider text-glow-purple">Lab Unit #09</h3></div>
-                        <div class="absolute left-4 right-4 top-32 bottom-32 overflow-hidden text-left text-[8px] font-mono text-neoncyan/40 opacity-50 mask-image-fade pointer-events-none z-0"><div class="animate-[matrix-scroll_12s_linear_infinite] flex flex-col gap-1.5"><p>> Iniciando protocolo de enlace DB...</p><p>> Mapeo neuronal de circuitos OK</p><p class="text-neonpink/80">> ALERTA: Corto en VDD_MAIN detectado</p><p>> Calculando rutas alternativas de energía</p><p>> Aislado componente U3200...</p><p>> ...</p></div></div>
-                        <div class="glass-panel p-4 rounded-xl border-slate-700/60 space-y-4 my-auto shadow-xl shadow-black/50 transform transition-all duration-500 group-hover:border-neoncyan/50 group-hover:-translate-y-2 translate-z-30 relative overflow-hidden backdrop-blur-xl bg-slate-900/80 z-10"><div class="absolute -top-10 -right-10 w-24 h-24 bg-neonpurple/20 rounded-full blur-2xl"></div><div class="flex justify-between items-center border-b border-slate-700/80 pb-2"><span class="text-slate-400 font-cyber font-bold tracking-widest text-[10px]">ID: REP-1002</span><span class="px-2 py-0.5 rounded text-[9px] font-cyber font-bold uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">EN DIAGNÓSTICO</span></div><div class="space-y-1.5 text-left"><p class="text-white font-black text-sm tracking-wide font-cyber">iPhone 14 Pro Max</p><div class="flex items-start gap-1"><svg class="w-3 h-3 text-neonpink mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><p class="text-slate-400 text-[10px] leading-tight font-semibold">Falla severa: No enciende tras inmersión hídrica.</p></div></div><div class="space-y-1.5"><div class="flex justify-between text-[8px] font-cyber font-bold text-slate-500 tracking-wider"><span>LECTURA TÉRMICA</span><span class="text-neoncyan">68%</span></div><div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800"><div class="bg-gradient-to-r from-neoncyan via-blue-500 to-neonpurple h-full w-[68%] relative"><div class="absolute top-0 right-0 bottom-0 w-3 bg-white/40 blur-[2px] animate-pulse"></div></div></div></div></div>
-                        <div class="text-[9px] text-slate-500 pt-3 border-t border-slate-800/80 font-mono tracking-widest">EPIC-SYS <span class="text-neongreen inline-block animate-pulse">●</span> ENCRIPTADO</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- ================= SECCIÓN SERVICIOS ================= -->
-    <main id="view-servicios" class="view-transition relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex items-center w-full hidden"><section class="w-full space-y-12"><div class="text-center space-y-4"><h2 class="font-cyber text-3xl sm:text-4xl font-extrabold text-white">NUESTROS SERVICIOS <span class="text-neoncyan">ÉPICOS</span></h2><p class="text-slate-400 max-w-2xl mx-auto">Toda solución con componentes de grado espacial e ingeniería avanzada.</p></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="landing-services-grid"></div></section></main>
-
-    <!-- ================= DIAGNÓSTICO IA ================= -->
-    <main id="view-ia-diagnostico" class="view-transition relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex items-center w-full hidden"><section class="w-full relative glass-panel rounded-3xl p-8 lg:p-12 border border-slate-800 shadow-2xl overflow-hidden"><div class="absolute -bottom-12 -left-12 w-64 h-64 bg-neonpurple/5 rounded-full blur-3xl"></div><div class="max-w-4xl mx-auto space-y-8"><div class="text-center space-y-3"><div class="inline-flex items-center gap-2 px-3 py-1 bg-neonpurple/20 border border-neonpurple/40 rounded-full text-neonpurple text-xs font-bold font-cyber">TECNOLOGÍA DE GENERACIÓN COGNITIVA</div><h2 class="font-cyber text-3xl sm:text-4xl font-extrabold text-white">AUTO-DIAGNÓSTICO PREVENTIVO ✨</h2><p class="text-slate-400 max-w-2xl mx-auto">¿Tu dispositivo actúa de forma extraña? Describe lo que sucede y nuestro cerebro cuántico IA evaluará el daño preliminar instantáneamente.</p></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"><div class="md:col-span-1 space-y-4 bg-slate-900/40 p-6 rounded-2xl border border-slate-800"><div class="space-y-1"><label class="text-xs font-cyber text-slate-400 uppercase tracking-widest">Dispositivo / Modelo</label><input type="text" id="ai-device-input" placeholder="Ej: iPhone 15 Pro, S24 Ultra" class="w-full bg-slate-950 border border-slate-800 focus:border-neonpurple text-white px-3 py-2.5 rounded-xl focus:outline-none text-sm font-semibold"></div><div class="space-y-1"><label class="text-xs font-cyber text-slate-400 uppercase tracking-widest">Síntomas / Detalles</label><textarea id="ai-symptoms-input" rows="4" placeholder="Ej: Se cayó y la pantalla tiene una línea verde, o no pasa del logotipo y calienta mucho la parte de atrás..." class="w-full bg-slate-950 border border-slate-800 focus:border-neonpurple text-white px-3 py-2.5 rounded-xl focus:outline-none text-sm resize-none"></textarea></div><button onclick="runClientAIDiagnosis()" class="w-full py-3 bg-gradient-to-r from-neonpurple to-neoncyan text-white font-cyber font-bold rounded-xl hover:from-neonpurple/90 hover:to-neoncyan/90 transition-all text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-neonpurple/15">Analizar con Diagnóstico IA ✨</button></div><div class="md:col-span-2 glass-panel p-6 sm:p-8 rounded-2xl border-slate-800 min-h-[300px] flex flex-col justify-center relative overflow-hidden"><div id="ai-state-idle" class="text-center space-y-4 py-8"><div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto"><svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div><p class="text-slate-400 text-sm max-w-sm mx-auto">Rellena los campos de la izquierda y haz clic en "Analizar" para inicializar la conexión con el núcleo neuronal.</p></div><div id="ai-state-loading" class="hidden text-center space-y-6 py-12"><div class="relative w-24 h-24 mx-auto flex items-center justify-center"><div class="absolute inset-0 rounded-full border-4 border-t-neonpurple border-r-transparent border-b-neoncyan border-l-transparent animate-spin"></div><div class="absolute w-16 h-16 rounded-full border border-slate-800 flex items-center justify-center bg-slate-950"><svg class="w-8 h-8 text-neoncyan animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg></div></div><div class="space-y-1"><h4 class="font-cyber font-bold text-white text-sm tracking-widest animate-pulse">SINTONIZANDO RED COGNITIVA...</h4><p class="text-slate-500 text-xs">Mapeando circuitos de silicio del modelo provisto...</p></div></div><div id="ai-state-results" class="hidden space-y-6"><div class="flex items-center justify-between border-b border-slate-800 pb-4"><div class="flex items-center gap-3"><span class="w-2.5 h-2.5 rounded-full bg-neoncyan animate-ping"></span><h3 class="font-cyber text-base font-black text-white uppercase tracking-wider">Reporte Tecnológico de Diagnóstico</h3></div><span id="ai-result-severity" class="px-2.5 py-0.5 rounded text-[10px] font-cyber font-bold uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">Gravedad: Pendiente</span></div><div class="space-y-4 text-sm leading-relaxed" id="ai-result-text"></div><div class="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4"><span class="text-slate-400 text-xs text-center sm:text-left">¿Quieres reservar una cita para este diagnóstico preciso?</span><button onclick="window.open('https://wa.me/584241682694?text=Hola%20Equipo%20EPIC%20REPAIR,%20quisiera%20agendar%20una%20cita%20para%20una%20reparación%20tras%20usar%20su%20Auto-Diagnóstico%20IA.', '_blank')" class="px-5 py-2.5 bg-neongreen text-slate-950 text-xs font-cyber font-bold rounded-xl hover:bg-neongreen/90 transition-all uppercase tracking-wider shadow-lg shadow-neongreen/20 flex items-center gap-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"></path></svg>Agendar por WhatsApp</button></div></div></div></div></div></section></main>
-
-    <!-- ================= PRODUCTOS ================= -->
-    <main id="view-productos" class="view-transition relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex items-center w-full hidden"><section class="w-full space-y-12"><div class="flex flex-col md:flex-row items-center justify-between gap-6"><div class="space-y-2 text-center md:text-left"><h2 class="font-cyber text-3xl sm:text-4xl font-extrabold text-white">TECH & ACCESSORIES <span class="text-neonpurple">STORE</span></h2><p class="text-slate-400">Accesorios blindados y gadgets de última generación con garantía de por vida.</p></div><div class="flex flex-wrap gap-2 justify-center" id="category-filters"><button data-cat="all" class="category-btn active px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-neonpurple bg-neonpurple/20 text-white transition-all">TODOS</button><button data-cat="cargadores" class="category-btn px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700 transition-all">CARGADORES</button><button data-cat="audifonos" class="category-btn px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700 transition-all">AUDÍFONOS</button><button data-cat="fundas" class="category-btn px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700 transition-all">PROTECCIÓN</button></div></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="products-grid"></div></section></main>
-
-    <!-- ================= RASTREAR ================= -->
-    <main id="view-rastrear" class="view-transition relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow flex items-center w-full hidden"><section class="w-full relative glass-panel rounded-3xl p-8 lg:p-12 border border-slate-800 shadow-2xl overflow-hidden"><div class="absolute -top-12 -right-12 w-64 h-64 bg-neoncyan/5 rounded-full blur-3xl"></div><div class="max-w-3xl mx-auto space-y-12 text-center"><div class="space-y-4"><div class="inline-flex items-center gap-2 px-3 py-1 bg-neoncyan/10 rounded-full text-neoncyan text-xs font-bold font-cyber">SISTEMA DE MONITOREO CUÁNTICO</div><h2 class="font-cyber text-3xl sm:text-4xl font-extrabold text-white">RASTREAR DISPOSITIVO EN TIEMPO REAL</h2><p class="text-slate-400">Sigue el estado microscópico de tu reparación de forma instantánea ingresando tu ID de orden o tu teléfono de contacto.</p></div><div class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto bg-slate-900/80 p-2 rounded-2xl border border-slate-800 focus-within:border-neoncyan transition-all"><input type="text" id="tracker-search-input" placeholder="Ej: REP-1001 o 555-0199" class="bg-transparent flex-1 px-4 py-3 text-white placeholder-slate-500 focus:outline-none text-base font-semibold"><button onclick="searchRepairOrder()" class="px-6 py-3 bg-neoncyan text-slate-950 font-cyber font-bold rounded-xl hover:bg-neoncyan/90 transition-all flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>Escanear</button></div><div id="tracker-result-panel" class="hidden text-left glass-panel p-6 sm:p-8 rounded-2xl border-slate-700/60 space-y-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6"><div><span class="text-xs text-slate-500 font-bold uppercase tracking-widest font-cyber">CÓDIGO DE ORDEN</span><h3 class="text-xl font-cyber font-black text-white" id="track-order-id">REP-1001</h3></div><div class="text-right"><span class="text-xs text-slate-500 font-bold uppercase tracking-widest block">DISPOSITIVO</span><span class="text-lg font-cyber font-bold text-neoncyan" id="track-order-device">iPhone 13 Pro</span></div></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm"><div class="space-y-1"><span class="text-slate-500 font-semibold block">Propietario</span><span class="text-slate-200 font-bold text-base" id="track-order-client">Carlos Pérez</span></div><div class="space-y-1"><span class="text-slate-500 font-semibold block">Falla Reportada</span><span class="text-amber-500 font-bold text-base" id="track-order-issue">Falla de Wi-Fi</span></div><div class="space-y-1"><span class="text-slate-500 font-semibold block">Presupuesto Estimado</span><span class="text-neongreen font-bold text-lg font-cyber" id="track-order-cost">$65.00</span></div></div><div class="space-y-6 pt-4"><h4 class="font-cyber text-xs font-bold text-slate-400 tracking-wider uppercase">Fase de Reparación Actual</h4><div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-2" id="timeline-container"><div class="absolute left-4 md:left-0 top-0 md:top-1/2 md:-translate-y-1/2 w-1 md:w-full h-full md:h-1 bg-slate-800 z-0 rounded-full"><div id="timeline-progress-bar" class="bg-gradient-to-r from-neoncyan to-neongreen h-0 md:h-full w-0 transition-all duration-1000"></div></div><div class="relative z-10 flex md:flex-col items-center gap-4 md:gap-2 group" id="step-0"><div class="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs step-indicator">01</div><div class="flex flex-col"><span class="text-sm font-bold text-slate-400 step-title">Aun en espera</span><span class="text-[10px] text-slate-500">Recibido en cola</span></div></div><div class="relative z-10 flex md:flex-col items-center gap-4 md:gap-2 group" id="step-1"><div class="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs step-indicator">02</div><div class="flex flex-col"><span class="text-sm font-bold text-slate-400 step-title">En Proceso</span><span class="text-[10px] text-slate-500">Mesa de trabajo</span></div></div><div class="relative z-10 flex md:flex-col items-center gap-4 md:gap-2 group" id="step-2"><div class="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs step-indicator">03</div><div class="flex flex-col"><span class="text-sm font-bold text-slate-400 step-title">Falla Detectada</span><span class="text-[10px] text-slate-500">Diagnóstico hecho</span></div></div><div class="relative z-10 flex md:flex-col items-center gap-4 md:gap-2 group" id="step-3"><div class="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs step-indicator">04</div><div class="flex flex-col"><span class="text-sm font-bold text-slate-400 step-title">Reparando</span><span class="text-[10px] text-slate-500">Ingeniería activa</span></div></div><div class="relative z-10 flex md:flex-col items-center gap-4 md:gap-2 group" id="step-4"><div class="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs step-indicator">05</div><div class="flex flex-col"><span class="text-sm font-bold text-slate-400 step-title">Listo para Entrega</span><span class="text-[10px] text-slate-500">Control de calidad</span></div></div></div></div><div id="track-order-photos-container" class="space-y-4 pt-4 border-t border-slate-800 hidden"><h4 class="font-cyber text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-neoncyan animate-pulse"></span>Evidencia Fotográfica de Avance en Laboratorio 📸</h4><div id="track-order-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div></div><div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-start gap-3"><div class="p-2 bg-neoncyan/10 text-neoncyan rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><div><h5 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Bitácora del Ingeniero</h5><p class="text-slate-300 text-xs mt-1" id="track-order-log">Laboratorio aguardando llegada de refacciones primarias.</p></div></div></div><div id="tracker-error-panel" class="hidden text-center glass-panel p-6 rounded-2xl border-neonpink/30 space-y-3 max-w-md mx-auto"><span class="text-3xl">⚠️</span><h3 class="font-cyber font-bold text-neonpink text-lg">CÓDIGO NO REGISTRADO</h3><p class="text-slate-400 text-sm">No encontramos ningún pedido activo con ese ID o teléfono en nuestra base de datos. Verifique los datos o llámenos.</p></div></div></section></main>
-
-    <!-- ================= MODALES DE DETALLE DE PRODUCTO Y SERVICIO ================= -->
-    <!-- Modal Producto -->
-    <div id="product-detail-modal" class="fixed inset-0 z-[200] overflow-y-auto hidden">
-        <div class="fixed inset-0 bg-black/90 backdrop-blur-md transition-all" onclick="closeProductModal()"></div>
-        <div class="relative min-h-screen flex items-center justify-center p-4">
-            <div class="relative glass-panel border border-neonpurple/50 rounded-3xl w-full max-w-2xl p-6 sm:p-8 space-y-6 z-10 modal-animation">
-                <button onclick="closeProductModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                <div class="text-center space-y-2"><span class="inline-block px-3 py-1 text-[10px] font-cyber font-bold uppercase tracking-wider bg-neonpurple/20 text-neonpurple rounded-full border border-neonpurple/30">PRODUCTO ÉPICO</span></div>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="md:w-1/2"><img id="modal-product-img" src="" alt="" class="w-full rounded-2xl border border-slate-700 shadow-xl object-cover bg-slate-900" style="aspect-ratio:1/1"></div>
-                    <div class="md:w-1/2 space-y-4">
-                        <h3 id="modal-product-name" class="font-cyber text-2xl font-black text-white tracking-wide"></h3>
-                        <div class="flex items-baseline gap-3"><span class="text-3xl font-cyber font-bold text-neongreen" id="modal-product-price"></span><span class="text-xs text-slate-500">+ IVA</span></div>
-                        <div class="h-px bg-gradient-to-r from-transparent via-neonpurple to-transparent my-2"></div>
-                        <p id="modal-product-desc" class="text-slate-300 text-sm leading-relaxed"></p>
-                        <div class="flex items-center gap-2"><span class="text-xs font-cyber text-slate-400">DISPONIBILIDAD:</span><span id="modal-product-stock" class="text-xs font-bold px-2 py-1 rounded-full"></span></div>
-                        <button id="modal-product-buy" class="w-full py-3 bg-gradient-to-r from-neongreen to-emerald-600 text-slate-950 font-cyber font-bold rounded-xl hover:scale-105 transition-all uppercase tracking-wider shadow-lg shadow-neongreen/20 flex items-center justify-center gap-2">COMPRAR AHORA →</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Servicio -->
-    <div id="service-detail-modal" class="fixed inset-0 z-[200] overflow-y-auto hidden">
-        <div class="fixed inset-0 bg-black/90 backdrop-blur-md transition-all" onclick="closeServiceModal()"></div>
-        <div class="relative min-h-screen flex items-center justify-center p-4">
-            <div class="relative glass-panel border border-neoncyan/50 rounded-3xl w-full max-w-2xl p-6 sm:p-8 space-y-6 z-10 modal-animation">
-                <button onclick="closeServiceModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                <div class="text-center space-y-2"><span class="inline-block px-3 py-1 text-[10px] font-cyber font-bold uppercase tracking-wider bg-neoncyan/20 text-neoncyan rounded-full border border-neoncyan/30">SERVICIO TÉCNICO</span></div>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="md:w-1/2 flex items-center justify-center"><div id="modal-service-icon" class="w-32 h-32 rounded-2xl bg-neoncyan/10 text-neoncyan flex items-center justify-center border border-neoncyan/30 shadow-xl"><svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div></div>
-                    <div class="md:w-1/2 space-y-4">
-                        <h3 id="modal-service-name" class="font-cyber text-2xl font-black text-white tracking-wide"></h3>
-                        <div class="flex items-baseline gap-3"><span class="text-3xl font-cyber font-bold text-neoncyan" id="modal-service-price"></span><span class="text-xs text-slate-500">precio base</span></div>
-                        <div class="h-px bg-gradient-to-r from-transparent via-neoncyan to-transparent my-2"></div>
-                        <p id="modal-service-desc" class="text-slate-300 text-sm leading-relaxed"></p>
-                        <button id="modal-service-consult" class="w-full py-3 bg-gradient-to-r from-neoncyan to-blue-600 text-white font-cyber font-bold rounded-xl hover:scale-105 transition-all uppercase tracking-wider shadow-lg shadow-neoncyan/20 flex items-center justify-center gap-2">SOLICITAR PRESUPUESTO →</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALES ADMIN Y OTROS (igual que antes, se incluyen completos pero no repetiré todo por brevedad, ya están en el código final) -->
-    <div id="admin-modal" class="fixed inset-0 z-50 overflow-y-auto hidden"><div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeAdminPanel()"></div><div class="relative min-h-screen flex items-center justify-center p-4"><div class="relative bg-cyberdark/95 border border-slate-800 rounded-3xl w-full max-w-6xl shadow-2xl p-6 sm:p-10 space-y-8 overflow-hidden z-10"><button onclick="closeAdminPanel()" class="absolute top-6 right-6 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div id="admin-login-view" class="max-w-md mx-auto space-y-6"><div class="text-center space-y-2"><div class="inline-flex p-3 bg-neonpurple/10 text-neonpurple rounded-2xl mb-2"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div><h2 class="font-cyber text-2xl font-black text-white">CYBER-CONTROL LOGIN</h2><p class="text-slate-500 text-sm">Ingrese para reconfigurar el universo del taller.</p></div><form onsubmit="handleAdminLogin(event)" class="space-y-4"><div class="space-y-1"><label class="text-xs font-cyber text-slate-400 uppercase tracking-widest">Nombre de Operador</label><input type="text" id="admin-user-input" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-4 py-3 rounded-xl focus:outline-none" placeholder="admin"></div><div class="space-y-1"><label class="text-xs font-cyber text-slate-400 uppercase tracking-widest">Código de Acceso</label><input type="password" id="admin-pass-input" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-4 py-3 rounded-xl focus:outline-none" placeholder="••••••••"></div><div class="text-xs text-slate-500 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-center">💡 Credenciales de prueba: <span class="text-neoncyan font-bold">admin</span> / <span class="text-neoncyan font-bold">admin123</span></div><button type="submit" class="w-full py-4 bg-neonpurple text-white font-cyber font-bold rounded-xl hover:bg-neonpurple/90 transition-all text-sm tracking-wider shadow-lg shadow-neonpurple/15">Establecer Conexión Segura ⚡</button></form></div><div id="admin-dashboard-view" class="hidden space-y-8"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-6"><div><div class="flex items-center gap-3"><span class="w-2.5 h-2.5 rounded-full bg-neongreen animate-ping"></span><h2 class="font-cyber text-2xl sm:text-3xl font-black text-white">SISTEMA CENTRAL DE GESTIÓN</h2></div><p class="text-slate-400 text-sm">Gestiona pedidos en tiempo real, inventarios de productos y catálogo de servicios públicos.</p></div><div class="flex gap-2 w-full md:w-auto"><button onclick="logoutAdmin()" class="px-4 py-2.5 bg-slate-900 border border-slate-800 hover:border-neonpink text-slate-400 hover:text-white rounded-lg transition-all text-xs font-bold uppercase tracking-wider">Desconectar</button></div></div><div class="flex flex-wrap gap-2 border-b border-slate-800"><button onclick="switchAdminTab('orders')" id="tab-orders" class="px-4 sm:px-6 py-3 border-b-2 border-neonpurple text-white text-xs sm:text-sm font-cyber font-bold">GESTIÓN DE REPARACIONES</button><button onclick="switchAdminTab('products')" id="tab-products" class="px-4 sm:px-6 py-3 border-b-2 border-transparent text-slate-400 hover:text-white text-xs sm:text-sm font-cyber font-bold">INVENTARIO DE PRODUCTOS</button><button onclick="switchAdminTab('services')" id="tab-services" class="px-4 sm:px-6 py-3 border-b-2 border-transparent text-slate-400 hover:text-white text-xs sm:text-sm font-cyber font-bold">INVENTARIO DE SERVICIOS</button></div><div id="admin-orders-content" class="space-y-6"><div class="flex flex-col sm:flex-row justify-between gap-4"><h3 class="font-cyber text-lg font-bold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-neoncyan"></span>Órdenes de Reparación Registradas</h3><button onclick="openNewOrderModal()" class="px-5 py-2.5 bg-neoncyan text-slate-950 font-cyber font-bold rounded-xl hover:bg-neoncyan/90 transition-all text-xs tracking-wider flex items-center gap-2">➕ Nueva Orden</button></div><div class="overflow-x-auto rounded-xl border border-slate-800"><table class="w-full text-left border-collapse text-sm"><thead><tr class="bg-slate-900/60 text-slate-400 font-cyber font-bold text-xs border-b border-slate-800"><th class="p-4">ID / Cliente</th><th class="p-4">Dispositivo</th><th class="p-4">Falla</th><th class="p-4">Costo</th><th class="p-4">Avances Visuales</th><th class="p-4">Estado Épico</th><th class="p-4 text-center">Acciones</th></tr></thead><tbody id="admin-orders-table-body"></tbody></table></div></div><div id="admin-products-content" class="hidden space-y-6"><div class="flex flex-col sm:flex-row justify-between gap-4"><h3 class="font-cyber text-lg font-bold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-neonpurple"></span>Productos en Vitrina</h3><button onclick="openNewProductModal()" class="px-5 py-2.5 bg-neonpurple text-white font-cyber font-bold rounded-xl hover:bg-neonpurple/90 transition-all text-xs tracking-wider flex items-center gap-2">➕ Añadir Producto</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="admin-products-grid"></div></div><div id="admin-services-content" class="hidden space-y-6"><div class="flex flex-col sm:flex-row justify-between gap-4"><h3 class="font-cyber text-lg font-bold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-neoncyan"></span>Catálogo de Servicios Ofrecidos</h3><button onclick="openNewServiceModal()" class="px-5 py-2.5 bg-neoncyan text-slate-950 font-cyber font-bold rounded-xl hover:bg-neoncyan/90 transition-all text-xs tracking-wider flex items-center gap-2">➕ Añadir Servicio</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="admin-services-grid"></div></div></div></div></div></div>
-
-    <div id="delete-confirm-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden"><div class="fixed inset-0 bg-black/90 backdrop-blur-sm" onclick="closeDeleteConfirmModal()"></div><div class="relative bg-slate-950 border-2 border-neonpink rounded-2xl w-full max-w-md p-6 space-y-6 z-10"><div class="text-center space-y-3"><span class="text-4xl block animate-bounce">⚠️</span><h3 class="font-cyber text-lg font-bold text-neonpink tracking-wider">ELIMINAR DE FORMA PERMANENTE</h3><p class="text-slate-300 text-sm" id="delete-confirm-text"></p></div><div class="flex gap-4"><button onclick="closeDeleteConfirmModal()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-cyber font-bold text-xs rounded-xl">ABORTAR</button><button id="delete-confirm-btn-trigger" class="flex-1 py-2.5 bg-neonpink hover:bg-neonpink/80 text-white font-cyber font-bold text-xs rounded-xl shadow-lg shadow-neonpink/10">CONFIRMAR DESTRUCCIÓN ⚡</button></div></div></div>
-
-    <div id="order-form-modal" class="fixed inset-0 z-50 overflow-y-auto hidden"><div class="fixed inset-0 bg-black/90 backdrop-blur-md"></div><div class="relative min-h-screen flex items-center justify-center p-4"><div class="relative bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-lg p-8 space-y-6 z-10"><h3 class="font-cyber text-xl font-bold text-white" id="order-modal-title">NUEVO PEDIDO DE REPARACIÓN</h3><form id="order-form" novalidate class="space-y-4"><input type="hidden" id="form-order-index"><div class="grid grid-cols-2 gap-4"><div class="space-y-1 col-span-2"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">ID de Orden</label><input type="text" id="form-order-id" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Nombre Cliente</label><input type="text" id="form-order-client" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Teléfono de Contacto</label><input type="text" id="form-order-phone" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Modelo Dispositivo</label><input type="text" id="form-order-device" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Costo Reparación ($)</label><input type="number" step="0.01" id="form-order-cost" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Falla Detectada / Descripción</label><input type="text" id="form-order-issue" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2.5 rounded-xl focus:outline-none text-sm"></div><div class="pt-1"><button type="button" onclick="autofillWithAI()" class="w-full py-2 bg-slate-900 border border-neonpurple hover:bg-neonpurple/10 text-neonpurple hover:text-white text-xs font-cyber font-bold rounded-lg transition-all flex items-center justify-center gap-2">Autocompletar Bitácora y Costo con IA ✨</button></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Fotos de Avance (máx 3)</label><div class="flex flex-col gap-2"><input type="file" id="form-order-file-upload" accept="image/*" multiple onchange="handleManualPhotoUpload(event)" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-cyber file:font-bold file:bg-neoncyan/10 file:text-neoncyan hover:file:bg-neoncyan/20 transition-all cursor-pointer"><span id="upload-status-indicator" class="hidden text-[10px] font-bold text-neoncyan animate-pulse"></span><input type="text" id="form-order-photos" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm" placeholder="Pega URL directa o código HTML..."><div class="text-[9px] text-slate-500 mt-1">💡 Ej: https://i.postimg.cc/... o pega el enlace de PostImages</div></div></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Fase del Proceso</label><select id="form-order-status" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"><option value="0">Fase 1: Aun en espera</option><option value="1">Fase 2: En Proceso (Mesa)</option><option value="2">Fase 3: Falla Detectada</option><option value="3">Fase 4: Reparando</option><option value="4">Fase 5: Listo para Entrega</option></select></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Bitácora Técnica</label><textarea id="form-order-log" rows="2" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></textarea></div><div class="flex gap-3 pt-4"><button type="button" onclick="closeOrderFormModal()" class="flex-1 py-3 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white font-cyber font-bold rounded-xl transition-all text-xs tracking-wider">CANCELAR</button><button type="button" id="save-order-btn" class="flex-1 py-3 bg-neoncyan text-slate-950 font-cyber font-bold rounded-xl hover:bg-neoncyan/90 transition-all text-xs tracking-wider shadow-lg shadow-neoncyan/15">GUARDAR CAMBIOS</button></div></form></div></div></div>
-
-    <div id="product-form-modal" class="fixed inset-0 z-50 overflow-y-auto hidden"><div class="fixed inset-0 bg-black/90 backdrop-blur-md"></div><div class="relative min-h-screen flex items-center justify-center p-4"><div class="relative bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-lg p-8 space-y-6 z-10"><h3 class="font-cyber text-xl font-bold text-white" id="product-modal-title">AÑADIR NUEVO PRODUCTO</h3><form onsubmit="saveProductForm(event)" class="space-y-4"><input type="hidden" id="form-product-index"><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Nombre</label><input type="text" id="form-product-name" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="grid grid-cols-2 gap-4"><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Categoría</label><select id="form-product-category" class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"><option value="cargadores">Cargadores / Energía</option><option value="audifonos">Audífonos / Audio</option><option value="fundas">Protección / Cases</option></select></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Precio Venta ($)</label><input type="number" step="0.01" id="form-product-price" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Enlace de Foto (URL)</label><input type="text" id="form-product-image" class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Descripción Breve</label><input type="text" id="form-product-desc" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Stock</label><input type="number" id="form-product-stock" required class="w-full bg-slate-900 border border-slate-800 focus:border-neonpurple text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="flex gap-3 pt-4"><button type="button" onclick="closeProductFormModal()" class="flex-1 py-3 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white font-cyber font-bold rounded-xl transition-all text-xs tracking-wider">CANCELAR</button><button type="submit" class="flex-1 py-3 bg-neonpurple text-white font-cyber font-bold rounded-xl hover:bg-neonpurple/90 transition-all text-xs tracking-wider shadow-lg shadow-neonpurple/15">GUARDAR PRODUCTO</button></div></form></div></div></div>
-    <div id="service-form-modal" class="fixed inset-0 z-50 overflow-y-auto hidden"><div class="fixed inset-0 bg-black/90 backdrop-blur-md"></div><div class="relative min-h-screen flex items-center justify-center p-4"><div class="relative bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-lg p-8 space-y-6 z-10"><h3 class="font-cyber text-xl font-bold text-white" id="service-modal-title">AÑADIR NUEVO SERVICIO</h3><form onsubmit="saveServiceForm(event)" class="space-y-4"><input type="hidden" id="form-service-index"><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Nombre</label><input type="text" id="form-service-name" required class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div><div class="grid grid-cols-2 gap-4"><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Icono</label><select id="form-service-icon" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"><option value="laser">Láser / Diagnóstico</option><option value="soldering">Placa / Soldadura</option><option value="screen">Pantalla / Display</option><option value="water">Agua / Líquidos</option><option value="data">Datos / Almacenamiento</option><option value="battery">Batería / Energía</option></select></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Precio Base ($)</label><input type="number" step="0.01" id="form-service-price" required class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm"></div></div><div class="space-y-1"><label class="text-[10px] font-cyber text-slate-400 uppercase tracking-widest">Descripción</label><textarea id="form-service-desc" required rows="3" class="w-full bg-slate-900 border border-slate-800 focus:border-neoncyan text-white px-3 py-2 rounded-xl focus:outline-none text-sm resize-none"></textarea></div><div class="flex gap-3 pt-4"><button type="button" onclick="closeServiceFormModal()" class="flex-1 py-3 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white font-cyber font-bold rounded-xl transition-all text-xs tracking-wider">CANCELAR</button><button type="submit" class="flex-1 py-3 bg-neoncyan text-slate-950 font-cyber font-bold rounded-xl hover:bg-neoncyan/90 transition-all text-xs tracking-wider shadow-lg shadow-neoncyan/15">GUARDAR SERVICIO</button></div></form></div></div></div>
-
-    <a href="https://wa.me/584241682694?text=Hola%20Equipo%20EPIC%20REPAIR,%20necesito%20soporte%20técnico." target="_blank" class="fixed bottom-6 left-6 z-[90] w-14 h-14 bg-neongreen text-slate-900 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-110 transition-all duration-300 group"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"></path></svg><span class="absolute left-16 bg-slate-900 border border-neongreen text-neongreen text-xs font-cyber font-bold px-3 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Chatear con un Ingeniero</span></a>
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] space-y-3"></div>
-    <footer class="border-t border-slate-800 bg-slate-950 py-12 relative z-10 w-full"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-slate-400 text-sm"><div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('inicio')"><div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-neoncyan to-neonpurple flex items-center justify-center"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div><span class="font-cyber font-bold tracking-wider text-slate-200">EPIC REPAIR LABS</span></div><div class="text-center md:text-right space-y-1"><p>&copy; 2026 EPIC REPAIR. Todos los derechos reservados.</p><p class="text-xs text-slate-600">Creado para darte el servicio más impecable y tecnológicamente avanzado con el poder de la IA.</p></div></div></footer>
-
-    <script>
-        // ======================== FUNCIÓN PARA EXTRAER URL DE IMAGEN (PostImages, etc.) ========================
-        function extractImageUrlsFromInput(input) {
-            if (!input) return '';
-            if (input.match(/^https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) return input;
-            const imgRegex = /<img[^>]+src=["']([^"']+)["']/i;
-            const match = input.match(imgRegex);
-            if (match && match[1]) return match[1];
-            const postPageRegex = /https?:\/\/(?:postimg\.cc|postimages\.org)\/([a-zA-Z0-9]+)/i;
-            const pageMatch = input.match(postPageRegex);
-            if (pageMatch && pageMatch[1]) return `https://i.postimg.cc/${pageMatch[1]}/image.jpg`;
-            const imgurPageRegex = /https?:\/\/imgur\.com\/([a-zA-Z0-9]+)/i;
-            const imgurMatch = input.match(imgurPageRegex);
-            if (imgurMatch && imgurMatch[1]) return `https://i.imgur.com/${imgurMatch[1]}.png`;
-            return input;
-        }
-
-        function cleanPhotosField(rawPhotos) {
-            if (!rawPhotos) return '';
-            let parts = rawPhotos.split(',').map(p => p.trim()).filter(p => p);
-            let cleaned = parts.map(p => extractImageUrlsFromInput(p)).filter(url => url && url !== '');
-            return cleaned.join(',');
-        }
-
-        // Datos por defecto
-        let orders = [], products = [], services = [], isAdminLoggedIn = false;
-        let deleteTargetType = '', deleteTargetIndex = -1;
-        const defaultOrders = [{ id: "REP-1001", client: "Pedro Armas", phone: "555-0199", device: "iPhone 15 Pro Max", issue: "Pantalla rota & táctil dañado", cost: 180.00, status: 0, log: "Equipo ingresado al laboratorio. En espera de aprobación de presupuesto y componentes.", photos: "https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?auto=format&fit=crop&w=500&q=80,https://images.unsplash.com/photo-1601524909162-be87252be298?auto=format&fit=crop&w=500&q=80" },{ id: "REP-1002", client: "Sofía Martínez", phone: "555-0188", device: "Samsung Galaxy S24 Ultra", issue: "Daño por agua", cost: 250.00, status: 2, log: "Abierto y secado por ultrasonido. Se ha localizado un cortocircuito en la línea principal de alimentación PP_VCC.", photos: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=500&q=80" },{ id: "REP-1003", client: "Miguel Díaz", phone: "555-0177", device: "Google Pixel 8", issue: "Batería hinchada", cost: 75.00, status: 3, log: "Extracción segura de batería degradada finalizada. Preparando calibración de celda nueva.", photos: "" },{ id: "REP-1004", client: "Laura Vega", phone: "555-0166", device: "Xiaomi 14", issue: "Puerto de carga Tipo-C dañado", cost: 45.00, status: 4, log: "Puerto reemplazado e inspeccionado bajo microscopio de alta definición. Pruebas de carga rápida exitosas.", photos: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80" }];
-        const defaultProducts = [{ name: "Cargador Anker GaN Prime 65W", category: "cargadores", price: 49.99, desc: "Carga ultrarrápida inteligente de triple puerto con chip térmico. Compatible con todos los dispositivos USB-C.", stock: 12, image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=500&q=80" },{ name: "Auriculares Epic Pro ANC", category: "audifonos", price: 129.99, desc: "Cancelación activa de ruido híbrida de 45dB, Audio Hi-Fi con codec LDAC. Batería de 40h.", stock: 8, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80" },{ name: "Funda Blindada MagSafe Ultra", category: "fundas", price: 29.99, desc: "Aero-material militar con absorción ante impactos de 3 metros. Compatible con MagSafe.", stock: 25, image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=500&q=80" },{ name: "Vidrio Templado Diamante 9H+", category: "fundas", price: 15.00, desc: "Dureza extrema con recubrimiento oleofóbico antihuellas. Borde 2.5D y facil instalación.", stock: 40, image: "" }];
-        const defaultServices = [{ name: "Diagnóstico Láser Avanzado", desc: "Localizamos cualquier cortocircuito con mapeo térmico y escáner de osciloscopio en tiempo récord. Incluye reporte detallado.", price: 15.00, icon: "laser" },{ name: "Micro-soldadura en Placa", desc: "Reparación de circuitos integrados (IC), chips de carga Tristar, bases de banda y reballing complejo. Garantía en la soldadura.", price: 80.00, icon: "soldering" },{ name: "Reemplazo de Pantallas y Vidrios", desc: "Cambiamos solo el vidrio exterior manteniendo tu pantalla OLED original (tecnología OCA industrial). Sin pérdida de calidad.", price: 95.00, icon: "screen" },{ name: "Resurrección por Líquidos", desc: "Limpieza química por ultrasonido y recubrimiento anticorrosión para salvar dispositivos ahogados. Tasa de éxito 94%", price: 60.00, icon: "water" },{ name: "Recuperación de Datos", desc: "Extraemos tus valiosas fotos y archivos directamente de chips NAND de almacenamiento dañados. Confidencialidad total.", price: 120.00, icon: "data" },{ name: "Reemplazo de Baterías de Alta Densidad", desc: "Células de energía certificadas de máxima capacidad con re-programación de salud del 100% en software.", price: 40.00, icon: "battery" }];
-
-        function initDatabase() {
-            if (!localStorage.getItem('epic_orders')) localStorage.setItem('epic_orders', JSON.stringify(defaultOrders));
-            if (!localStorage.getItem('epic_products')) localStorage.setItem('epic_products', JSON.stringify(defaultProducts));
-            if (!localStorage.getItem('epic_services')) localStorage.setItem('epic_services', JSON.stringify(defaultServices));
-            orders = JSON.parse(localStorage.getItem('epic_orders'));
-            products = JSON.parse(localStorage.getItem('epic_products'));
-            services = JSON.parse(localStorage.getItem('epic_services'));
-        }
-        function updateStorage() { try { localStorage.setItem('epic_orders', JSON.stringify(orders)); localStorage.setItem('epic_products', JSON.stringify(products)); localStorage.setItem('epic_services', JSON.stringify(services)); return true; } catch(e) { showToast("Error de almacenamiento: " + e.message, "error"); return false; } }
-        function showToast(msg, type='info'){ let c=document.getElementById('toast-container'),t=document.createElement('div'); let color='border-neoncyan text-neoncyan'; if(type==='success') color='border-neongreen text-neongreen bg-neongreen/10'; if(type==='error') color='border-neonpink text-neonpink bg-neonpink/10'; if(type==='warning') color='border-amber-500 text-amber-500 bg-amber-500/10'; t.className=`glass-panel ${color} border px-5 py-3 rounded-xl flex items-center justify-between gap-4 shadow-xl text-xs font-bold font-cyber tracking-wider max-w-sm toast-slide`; t.innerHTML=`<span>${msg}</span><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">&times;</button>`; c.appendChild(t); setTimeout(()=>{t.style.opacity='0'; t.style.transform='translateX(50px)'; setTimeout(()=>t.remove(),500);},5000); }
-
-        // DIAGNÓSTICO IA
-        function runClientAIDiagnosis() {
-            const device = document.getElementById('ai-device-input').value.trim();
-            const symptoms = document.getElementById('ai-symptoms-input').value.trim();
-            if (!device || !symptoms) return showToast("Por favor define el modelo y los síntomas.", "warning");
-            document.getElementById('ai-state-idle').classList.add('hidden');
-            document.getElementById('ai-state-results').classList.add('hidden');
-            document.getElementById('ai-state-loading').classList.remove('hidden');
-            setTimeout(() => {
-                let severity = "MEDIA", explanation = "";
-                const lower = symptoms.toLowerCase();
-                if (lower.includes("agua") || lower.includes("líquido") || lower.includes("corto") || lower.includes("no enciende")) severity = "CRÍTICA";
-                else if (lower.includes("pantalla") || lower.includes("táctil") || lower.includes("rota")) severity = "MEDIA";
-                else if (lower.includes("batería") || lower.includes("carga") || lower.includes("calienta")) severity = "MEDIA";
-                else severity = "BAJA";
-                if (severity === "CRÍTICA") explanation = `⚠️ Alerta de alta complejidad para tu ${device}. Los síntomas indican posible daño por líquido o cortocircuito. Nuestro laboratorio aplicará limpieza ultrasónica y micro-soldadura.`;
-                else if (severity === "MEDIA") explanation = `🛠️ Diagnóstico intermedio para ${device}. La falla parece estar relacionada con la pantalla o el sistema de energía. Presupuesto estimado: $45 - $120 USD.`;
-                else explanation = `✅ Buenas noticias, tu ${device} presenta fallos menores. Costo estimado bajo (desde $15 USD).`;
-                const span = document.getElementById('ai-result-severity');
-                span.innerText = `Gravedad: ${severity}`;
-                span.className = "px-2.5 py-0.5 rounded text-[10px] font-cyber font-bold uppercase tracking-widest " + (severity==='CRÍTICA'?'bg-neonpink/10 text-neonpink border border-neonpink/20':(severity==='MEDIA'?'bg-amber-500/10 text-amber-500 border border-amber-500/20':'bg-neongreen/10 text-neongreen border border-neongreen/20'));
-                document.getElementById('ai-result-text').innerHTML = `<p class="text-slate-300">${explanation}</p>`;
-                document.getElementById('ai-state-loading').classList.add('hidden');
-                document.getElementById('ai-state-results').classList.remove('hidden');
-                showToast("Análisis completado", "success");
-            }, 1500);
-        }
-
-        // NAVEGACIÓN
-        function navigateTo(viewId) {
-            ['inicio','servicios','ia-diagnostico','productos','rastrear'].forEach(v => { let el = document.getElementById(`view-${v}`); if(el) { el.classList.add('hidden'); el.style.opacity='0'; el.style.transform='scale(0.98)'; } });
-            let active = document.getElementById(`view-${viewId}`); if(active) { active.classList.remove('hidden'); setTimeout(()=>{ active.style.opacity='1'; active.style.transform='scale(1)'; },50); }
-            document.querySelectorAll('.nav-link-btn').forEach(l=>l.className="nav-link-btn text-slate-400 hover:text-white transition-all pb-1");
-            let activeBtn = document.getElementById(`nav-btn-${viewId}`); if(activeBtn) activeBtn.className="nav-link-btn text-neoncyan border-b-2 border-neoncyan pb-1 transition-all";
-            window.scrollTo({top:0,behavior:'smooth'});
-        }
-        function toggleMobileMenu() { let m=document.getElementById('mobile-menu'), i=document.getElementById('menu-icon'); if(m.classList.contains('hidden')){ m.classList.remove('hidden'); i.innerHTML='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'; } else { m.classList.add('hidden'); i.innerHTML='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>'; } }
-        function closeMobileMenu() { document.getElementById('mobile-menu').classList.add('hidden'); document.getElementById('menu-icon').innerHTML='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>'; }
-
-        // RENDER DE PRODUCTOS (con clic en tarjeta)
-        function renderProducts(filter='all') {
-            let grid = document.getElementById('products-grid'); grid.innerHTML='';
-            let filtered = filter==='all' ? products : products.filter(p=>p.category===filter);
-            if(filtered.length===0) return grid.innerHTML='<div class="col-span-full text-center py-12 text-slate-500">Ningún producto disponible.</div>';
-            let placeholders={cargadores:"https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=500&q=80", audifonos:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80", fundas:"https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=500&q=80"};
-            filtered.forEach((p, idx) => {
-                let img = p.image?.trim() ? extractImageUrlsFromInput(p.image) : (placeholders[p.category] || "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80");
-                let card=document.createElement('div');
-                card.className="glass-panel p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 relative group product-card";
-                card.setAttribute('data-product-index', idx);
-                card.onclick = () => showProductDetail(idx);
-                card.innerHTML=`<div class="space-y-4"><div class="w-full h-44 bg-slate-900 rounded-xl overflow-hidden border border-slate-800 relative"><img src="${img}" alt="${p.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div></div><div class="space-y-1"><span class="text-[10px] uppercase font-cyber font-bold text-slate-500 tracking-wider">${p.category}</span><h4 class="text-white font-cyber font-bold text-base group-hover:text-neonpurple transition-colors">${p.name}</h4><p class="text-slate-400 text-xs line-clamp-2">${p.desc}</p></div></div><div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-900"><span class="text-white font-cyber font-extrabold text-lg">$${p.price.toFixed(2)}</span><span class="${p.stock>0?'text-neongreen bg-neongreen/5 border-neongreen/20':'text-neonpink bg-neonpink/5 border-neonpink/20'} text-[10px] font-cyber font-bold px-2.5 py-1 rounded border">${p.stock>0?`STOCK: ${p.stock}`:'SIN STOCK'}</span></div>`;
-                grid.appendChild(card);
-            });
-        }
-
-        // RENDER DE SERVICIOS (con clic en tarjeta)
-        function renderLandingServices() {
-            let grid = document.getElementById('landing-services-grid'); grid.innerHTML='';
-            if(!services.length){ grid.innerHTML='<div class="col-span-full text-center py-12 text-slate-500">No hay servicios activos.</div>'; return; }
-            let icons={laser:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,soldering:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>`,screen:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`,water:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>`,data:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`,battery:`<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg>`};
-            services.forEach((s, idx) => {
-                let card=document.createElement('div');
-                card.className="glass-panel p-8 rounded-2xl hover:border-neoncyan/50 transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden service-card";
-                card.setAttribute('data-service-index', idx);
-                card.onclick = () => showServiceDetail(idx);
-                card.innerHTML=`<div class="absolute top-0 right-0 w-32 h-32 bg-neoncyan/5 rounded-full blur-2xl pointer-events-none transition-all group-hover:bg-neoncyan/10"></div><div class="flex items-center justify-between mb-6"><div class="w-12 h-12 rounded-xl bg-neoncyan/10 text-neoncyan flex items-center justify-center border border-neoncyan/20">${icons[s.icon]||icons.laser}</div><span class="font-cyber font-bold text-xs text-neoncyan px-2 py-0.5 rounded bg-neoncyan/10 border border-neoncyan/20">DESDE $${s.price.toFixed(2)}</span></div><h3 class="font-cyber text-lg font-bold text-white mb-3">${s.name}</h3><p class="text-slate-400 text-sm leading-relaxed line-clamp-3">${s.desc}</p>`;
-                grid.appendChild(card);
-            });
-        }
-
-        // MODAL PRODUCTO
-        function showProductDetail(index) {
-            const p = products[index];
-            if (!p) return;
-            document.getElementById('modal-product-img').src = extractImageUrlsFromInput(p.image) || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80';
-            document.getElementById('modal-product-name').innerText = p.name;
-            document.getElementById('modal-product-price').innerText = `$${p.price.toFixed(2)}`;
-            document.getElementById('modal-product-desc').innerText = p.desc;
-            const stockSpan = document.getElementById('modal-product-stock');
-            if (p.stock > 0) {
-                stockSpan.innerText = `En stock (${p.stock} unidades)`;
-                stockSpan.className = "text-xs font-bold px-2 py-1 rounded-full bg-neongreen/20 text-neongreen border border-neongreen/30";
-            } else {
-                stockSpan.innerText = "Agotado";
-                stockSpan.className = "text-xs font-bold px-2 py-1 rounded-full bg-neonpink/20 text-neonpink border border-neonpink/30";
-            }
-            const buyBtn = document.getElementById('modal-product-buy');
-            buyBtn.onclick = () => {
-                const msg = `Hola EPIC REPAIR, me interesa comprar *${p.name}* por *$${p.price.toFixed(2)}*. ¿Podrían darme más información sobre disponibilidad y envío?`;
-                window.open(`https://wa.me/584241682694?text=${encodeURIComponent(msg)}`, '_blank');
-            };
-            document.getElementById('product-detail-modal').classList.remove('hidden');
-        }
-        function closeProductModal() {
-            document.getElementById('product-detail-modal').classList.add('hidden');
-        }
-
-        // MODAL SERVICIO
-        function showServiceDetail(index) {
-            const s = services[index];
-            if (!s) return;
-            const iconMap = {
-                laser: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
-                soldering: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>`,
-                screen: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`,
-                water: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>`,
-                data: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>`,
-                battery: `<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg>`
-            };
-            document.getElementById('modal-service-icon').innerHTML = iconMap[s.icon] || iconMap.laser;
-            document.getElementById('modal-service-name').innerText = s.name;
-            document.getElementById('modal-service-price').innerText = `$${s.price.toFixed(2)}`;
-            document.getElementById('modal-service-desc').innerText = s.desc;
-            const consultBtn = document.getElementById('modal-service-consult');
-            consultBtn.onclick = () => {
-                const msg = `Hola EPIC REPAIR, necesito información sobre el servicio de *${s.name}*. Presupuesto base: $${s.price.toFixed(2)}. ¿Podrían cotizarme mi caso específico?`;
-                window.open(`https://wa.me/584241682694?text=${encodeURIComponent(msg)}`, '_blank');
-            };
-            document.getElementById('service-detail-modal').classList.remove('hidden');
-        }
-        function closeServiceModal() {
-            document.getElementById('service-detail-modal').classList.add('hidden');
-        }
-
-        // RASTREO
-        function searchRepairOrder() {
-            let input=document.getElementById('tracker-search-input').value.trim().toLowerCase();
-            let resultPanel=document.getElementById('tracker-result-panel'), errorPanel=document.getElementById('tracker-error-panel');
-            if(!input) return showToast("Ingrese ID o teléfono","warning");
-            let order=orders.find(o=>o.id.toLowerCase()===input||o.phone.toLowerCase()===input);
-            if(order){
-                errorPanel.classList.add('hidden'); resultPanel.classList.remove('hidden');
-                document.getElementById('track-order-id').innerText=order.id;
-                document.getElementById('track-order-device').innerText=order.device;
-                document.getElementById('track-order-client').innerText=order.client;
-                document.getElementById('track-order-issue').innerText=order.issue;
-                document.getElementById('track-order-cost').innerText=`$${order.cost.toFixed(2)}`;
-                document.getElementById('track-order-log').innerText=order.log||"Sin bitácora.";
-                let photosContainer=document.getElementById('track-order-photos-container'), photosGrid=document.getElementById('track-order-photos-grid');
-                photosGrid.innerHTML='';
-                let orderPhotos=order.photos; let isAutogenerated=false;
-                if(!orderPhotos?.trim()){ isAutogenerated=true; let autoPhotos=["https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1601524909162-be87252be298?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80","https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80"]; let list=[]; for(let i=0;i<=order.status;i++) if(autoPhotos[i]) list.push(autoPhotos[i]); orderPhotos=list.join(','); }
-                if(orderPhotos?.trim()){
-                    photosContainer.classList.remove('hidden');
-                    let title=photosContainer.querySelector('h4');
-                    title.innerHTML=isAutogenerated?`<span class="w-2 h-2 rounded-full bg-neoncyan animate-pulse"></span>Simulación Cuántica de Avance (Automático) 📸`:`<span class="w-2 h-2 rounded-full bg-neoncyan animate-pulse"></span>Evidencia Fotográfica de Avance 📸`;
-                    let urls = orderPhotos.split(',').map(u=>u.trim()).filter(u=>u);
-                    urls.forEach(url=>{
-                        let resolved = extractImageUrlsFromInput(url);
-                        let wrapper=document.createElement('div');
-                        wrapper.className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 aspect-video group cursor-pointer shadow-md";
-                        wrapper.onclick=()=>window.open(resolved,'_blank');
-                        wrapper.innerHTML=`<img src="${resolved}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?auto=format&fit=crop&w=500&q=80'"><div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none"><span class="text-[10px] font-cyber text-white bg-slate-950/80 px-2 py-1 rounded border border-slate-800">ABRIR 🔎</span></div>`;
-                        photosGrid.appendChild(wrapper);
-                    });
-                } else photosContainer.classList.add('hidden');
-                updateTrackerTimeline(order.status); showToast(`Orden ${order.id} cargada.`,'success');
-            } else { resultPanel.classList.add('hidden'); errorPanel.classList.remove('hidden'); showToast("No encontrado",'error'); }
-        }
-        function updateTrackerTimeline(currentPhase){
-            let steps=5, perc=(currentPhase/(steps-1))*100;
-            let bar=document.getElementById('timeline-progress-bar');
-            let isMobile=window.innerWidth<768;
-            if(isMobile){ bar.style.height=`${perc}%`; bar.style.width='100%'; } else { bar.style.width=`${perc}%`; bar.style.height='100%'; }
-            for(let i=0;i<steps;i++){ let node=document.getElementById(`step-${i}`); if(!node) continue; let ind=node.querySelector('.step-indicator'), tit=node.querySelector('.step-title'); ind.className="w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs font-cyber transition-all step-indicator"; tit.className="text-sm font-bold text-slate-400 step-title"; if(i<currentPhase){ ind.classList.add('border-neongreen','bg-neongreen/10','text-neongreen','neon-glow-green'); tit.classList.add('text-slate-200'); } else if(i===currentPhase){ ind.classList.add('border-neoncyan','bg-neoncyan/20','text-neoncyan','scale-110','neon-glow-cyan'); tit.classList.add('text-neoncyan','text-glow'); } else ind.classList.add('border-slate-800','text-slate-600'); }
-        }
-        window.addEventListener('resize',()=>{ let activeOrder=orders.find(o=>document.getElementById('track-order-id')?.innerText===o.id); if(activeOrder) updateTrackerTimeline(activeOrder.status); });
-
-        // ADMIN (funciones abreviadas pero completas)
-        function openAdminPanel(){ document.getElementById('admin-modal').classList.remove('hidden'); isAdminLoggedIn?showAdminDashboard():showAdminLogin(); }
-        function closeAdminPanel(){ document.getElementById('admin-modal').classList.add('hidden'); }
-        function showAdminLogin(){ document.getElementById('admin-login-view').classList.remove('hidden'); document.getElementById('admin-dashboard-view').classList.add('hidden'); }
-        function showAdminDashboard(){ document.getElementById('admin-login-view').classList.add('hidden'); document.getElementById('admin-dashboard-view').classList.remove('hidden'); switchAdminTab('orders'); }
-        function handleAdminLogin(e){ e.preventDefault(); let u=document.getElementById('admin-user-input').value.trim(), p=document.getElementById('admin-pass-input').value.trim(); if(u==='admin'&&p==='admin123'){ isAdminLoggedIn=true; showToast("Acceso concedido","success"); showAdminDashboard(); } else showToast("Credenciales inválidas","error"); }
-        function logoutAdmin(){ isAdminLoggedIn=false; showToast("Desconectado","info"); showAdminLogin(); }
-        function switchAdminTab(tab){ ['tab-orders','tab-products','tab-services'].forEach(id=>document.getElementById(id).className="px-4 sm:px-6 py-3 border-b-2 border-transparent text-slate-400 hover:text-white text-xs sm:text-sm font-cyber font-bold transition-all"); ['admin-orders-content','admin-products-content','admin-services-content'].forEach(id=>document.getElementById(id).classList.add('hidden')); document.getElementById(`tab-${tab}`).className="px-4 sm:px-6 py-3 border-b-2 border-neonpurple text-white text-xs sm:text-sm font-cyber font-bold transition-all"; document.getElementById(`admin-${tab}-content`).classList.remove('hidden'); if(tab==='orders') renderAdminOrdersTable(); else if(tab==='products') renderAdminProductsGrid(); else renderAdminServicesGrid(); }
-        function renderAdminOrdersTable(){ let tbody=document.getElementById('admin-orders-table-body'); tbody.innerHTML=''; let badges=[{text:"Aun en espera",style:"bg-slate-800 text-slate-400"},{text:"En Proceso",style:"bg-blue-500/10 text-blue-500 border-blue-500/20"},{text:"Falla Detectada",style:"bg-amber-500/10 text-amber-500 border-amber-500/20"},{text:"Reparando",style:"bg-purple-500/10 text-purple-500 border-purple-500/20"},{text:"Listo para Entrega",style:"bg-neongreen/10 text-neongreen border-neongreen/20"}]; orders.forEach((o,i)=>{ let tr=document.createElement('tr'); let badge=badges[o.status]||badges[0]; let photosCount=o.photos&&o.photos.trim()?o.photos.split(',').length:0; tr.innerHTML=`<td class="p-4"><span class="font-cyber font-bold text-white block">${o.id}</span><span class="text-xs text-slate-400">${o.client} (${o.phone})</span></td><td class="p-4 text-slate-300 font-semibold">${o.device}</td><td class="p-4 text-slate-400 text-xs max-w-xs truncate">${o.issue}</td><td class="p-4 font-cyber font-bold text-neongreen">$${o.cost.toFixed(2)}</td><td class="p-4"><span class="text-xs px-2 py-0.5 rounded ${photosCount>0?'bg-neoncyan/10 text-neoncyan border border-neoncyan/20':'bg-slate-950 text-slate-600'}">📸 ${photosCount}</span></td><td class="p-4"><span class="px-2.5 py-1 rounded text-[10px] font-cyber font-bold uppercase tracking-wide border ${badge.style}">${badge.text}</span></td><td class="p-4 text-center"><div class="flex items-center justify-center gap-2"><button onclick="editOrder(${i})" class="p-1.5 bg-slate-900 border border-slate-800 hover:border-neoncyan text-neoncyan rounded-lg" title="Editar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button><button onclick="openDeleteConfirmModal('order', ${i}, '${o.id}')" class="p-1.5 bg-slate-900 border border-slate-800 hover:border-neonpink text-neonpink rounded-lg" title="Borrar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></tr>`; tbody.appendChild(tr); }); }
-        function renderAdminProductsGrid(){ let container=document.getElementById('admin-products-grid'); container.innerHTML=''; products.forEach((p,i)=>{ let img = p.image?.trim() ? extractImageUrlsFromInput(p.image) : "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80"; let card=document.createElement('div'); card.className="glass-panel p-5 rounded-2xl border-slate-800 flex flex-col justify-between"; card.innerHTML=`<div class="space-y-3"><div class="flex justify-between items-start"><span class="text-[9px] uppercase font-cyber font-bold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-slate-500">${p.category}</span><span class="text-white font-cyber font-bold text-sm">$${p.price.toFixed(2)}</span></div><div class="flex items-center gap-3"><div class="w-12 h-12 rounded bg-slate-900 overflow-hidden border border-slate-800"><img src="${img}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80'"></div><div><h4 class="text-slate-200 font-bold text-sm truncate max-w-[150px]">${p.name}</h4><p class="text-slate-500 text-[11px] truncate max-w-[150px]">${p.desc}</p></div></div><div class="flex justify-between items-center text-xs text-slate-400 bg-slate-950 p-2 rounded"><span>Existencias:</span><span class="font-cyber font-bold ${p.stock>0?'text-neongreen':'text-neonpink'}">${p.stock} pz</span></div></div><div class="flex gap-2 mt-4 pt-3 border-t border-slate-900"><button onclick="editProduct(${i})" class="flex-1 py-2 bg-slate-900 border border-slate-800 hover:border-neonpurple text-slate-300 hover:text-white rounded-lg text-xs font-cyber">EDITAR</button><button onclick="openDeleteConfirmModal('product', ${i}, '${p.name}')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-neonpink text-neonpink rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; container.appendChild(card); }); }
-        function renderAdminServicesGrid(){ let container=document.getElementById('admin-services-grid'); container.innerHTML=''; services.forEach((s,i)=>{ let card=document.createElement('div'); card.className="glass-panel p-5 rounded-2xl border-slate-800 flex flex-col justify-between"; card.innerHTML=`<div class="space-y-3"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-cyber font-bold bg-neoncyan/10 border border-neoncyan/20 px-2 py-0.5 rounded text-neoncyan">${s.icon}</span><span class="text-white font-cyber font-bold text-sm">$${s.price.toFixed(2)}</span></div><div><h4 class="text-slate-200 font-bold text-sm truncate">${s.name}</h4><p class="text-slate-500 text-xs mt-1 line-clamp-2 h-8">${s.desc}</p></div></div><div class="flex gap-2 mt-4 pt-3 border-t border-slate-900"><button onclick="editService(${i})" class="flex-1 py-2 bg-slate-900 border border-slate-800 hover:border-neoncyan text-slate-300 hover:text-white rounded-lg text-xs font-cyber">EDITAR</button><button onclick="openDeleteConfirmModal('service', ${i}, '${s.name}')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-neonpink text-neonpink rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`; container.appendChild(card); }); }
-        function autofillWithAI(){ showToast("IA local: costo sugerido $85, bitácora generada.", "info"); document.getElementById('form-order-cost').value='85.00'; document.getElementById('form-order-log').value='Ingreso a laboratorio. Primer análisis: posible daño en placa madre. Se aplicará micro-soldadura y pruebas de tensión.'; }
-        function compressAndConvertFileToBase64(file){ return new Promise((resolve,reject)=>{ let reader=new FileReader(); reader.readAsDataURL(file); reader.onload=e=>resolve(e.target.result); reader.onerror=reject; }); }
-        async function handleManualPhotoUpload(e){ let files=e.target.files; if(!files.length) return; let ind=document.getElementById('upload-status-indicator'); ind.classList.remove('hidden'); ind.innerText="Comprimiendo..."; let existing=document.getElementById('form-order-photos').value.trim(); let photos=[]; for(let f of files){ if(photos.length>=3){ showToast("Máx 3 fotos","warning"); break; } try{ photos.push(await compressAndConvertFileToBase64(f)); }catch(err){ showToast("Error al procesar imagen","error"); } } if(photos.length){ let newVal=existing?existing+','+photos.join(','):photos.join(','); document.getElementById('form-order-photos').value=newVal; showToast(`${photos.length} foto(s) comprimidas.`,"success"); } ind.classList.add('hidden'); e.target.value=""; }
-        function saveOrderManually(){ let id=document.getElementById('form-order-id').value.trim(); let client=document.getElementById('form-order-client').value.trim(); let phone=document.getElementById('form-order-phone').value.trim(); let device=document.getElementById('form-order-device').value.trim(); let cost=parseFloat(document.getElementById('form-order-cost').value); let issue=document.getElementById('form-order-issue').value.trim(); let rawPhotos=document.getElementById('form-order-photos').value.trim(); let photos=cleanPhotosField(rawPhotos); let status=parseInt(document.getElementById('form-order-status').value); let log=document.getElementById('form-order-log').value.trim(); let index=parseInt(document.getElementById('form-order-index').value); if(!id||!client||!phone||!device||isNaN(cost)||!issue) return showToast("Complete todos los campos obligatorios","error"); if(index===-1 && orders.some(o=>o.id===id)) return showToast(`ID ${id} ya existe`,"error"); let orderData={id,client,phone,device,cost,issue,photos,status,log}; if(index===-1) orders.push(orderData); else orders[index]=orderData; if(updateStorage()){ closeOrderFormModal(); renderAdminOrdersTable(); showToast("Orden guardada","success"); } }
-        function openNewOrderModal(){ document.getElementById('order-modal-title').innerText="CREAR ORDEN"; document.getElementById('form-order-index').value="-1"; document.getElementById('form-order-id').value="REP-"+(1000+orders.length+1); document.getElementById('form-order-id').disabled=false; ['client','phone','device','issue','photos','log'].forEach(id=>document.getElementById(`form-order-${id}`).value=""); document.getElementById('form-order-cost').value="0.00"; document.getElementById('form-order-status').value="0"; document.getElementById('order-form-modal').classList.remove('hidden'); }
-        function editOrder(i){ let o=orders[i]; document.getElementById('order-modal-title').innerText=`EDITAR ORDEN ${o.id}`; document.getElementById('form-order-index').value=i; document.getElementById('form-order-id').value=o.id; document.getElementById('form-order-id').disabled=true; document.getElementById('form-order-client').value=o.client; document.getElementById('form-order-phone').value=o.phone; document.getElementById('form-order-device').value=o.device; document.getElementById('form-order-cost').value=o.cost; document.getElementById('form-order-issue').value=o.issue; document.getElementById('form-order-photos').value=o.photos||""; document.getElementById('form-order-status').value=o.status; document.getElementById('form-order-log').value=o.log||""; document.getElementById('order-form-modal').classList.remove('hidden'); }
-        function closeOrderFormModal(){ document.getElementById('order-form-modal').classList.add('hidden'); }
-        function openNewProductModal(){ document.getElementById('product-modal-title').innerText="AÑADIR PRODUCTO"; document.getElementById('form-product-index').value="-1"; ['name','image','desc'].forEach(id=>document.getElementById(`form-product-${id}`).value=""); document.getElementById('form-product-category').value="cargadores"; document.getElementById('form-product-price').value="0.00"; document.getElementById('form-product-stock').value="10"; document.getElementById('product-form-modal').classList.remove('hidden'); }
-        function editProduct(i){ let p=products[i]; document.getElementById('product-modal-title').innerText="EDITAR PRODUCTO"; document.getElementById('form-product-index').value=i; document.getElementById('form-product-name').value=p.name; document.getElementById('form-product-category').value=p.category; document.getElementById('form-product-price').value=p.price; document.getElementById('form-product-image').value=p.image||""; document.getElementById('form-product-desc').value=p.desc; document.getElementById('form-product-stock').value=p.stock; document.getElementById('product-form-modal').classList.remove('hidden'); }
-        function saveProductForm(e){ e.preventDefault(); let idx=parseInt(document.getElementById('form-product-index').value); let data={ name:document.getElementById('form-product-name').value.trim(), category:document.getElementById('form-product-category').value, price:parseFloat(document.getElementById('form-product-price').value), image:document.getElementById('form-product-image').value.trim(), desc:document.getElementById('form-product-desc').value.trim(), stock:parseInt(document.getElementById('form-product-stock').value) }; if(idx===-1) products.push(data); else products[idx]=data; updateStorage(); closeProductFormModal(); renderAdminProductsGrid(); renderProducts(); showToast("Producto guardado","success"); }
-        function closeProductFormModal(){ document.getElementById('product-form-modal').classList.add('hidden'); }
-        function openNewServiceModal(){ document.getElementById('service-modal-title').innerText="AÑADIR SERVICIO"; document.getElementById('form-service-index').value="-1"; ['name','desc'].forEach(id=>document.getElementById(`form-service-${id}`).value=""); document.getElementById('form-service-icon').value="laser"; document.getElementById('form-service-price').value="15.00"; document.getElementById('service-form-modal').classList.remove('hidden'); }
-        function editService(i){ let s=services[i]; document.getElementById('service-modal-title').innerText="EDITAR SERVICIO"; document.getElementById('form-service-index').value=i; document.getElementById('form-service-name').value=s.name; document.getElementById('form-service-icon').value=s.icon; document.getElementById('form-service-price').value=s.price; document.getElementById('form-service-desc').value=s.desc; document.getElementById('service-form-modal').classList.remove('hidden'); }
-        function saveServiceForm(e){ e.preventDefault(); let idx=parseInt(document.getElementById('form-service-index').value); let data={ name:document.getElementById('form-service-name').value.trim(), icon:document.getElementById('form-service-icon').value, price:parseFloat(document.getElementById('form-service-price').value), desc:document.getElementById('form-service-desc').value.trim() }; if(idx===-1) services.push(data); else services[idx]=data; updateStorage(); closeServiceFormModal(); renderAdminServicesGrid(); renderLandingServices(); showToast("Servicio guardado","success"); }
-        function closeServiceFormModal(){ document.getElementById('service-form-modal').classList.add('hidden'); }
-        function openDeleteConfirmModal(type,index,name){ deleteTargetType=type; deleteTargetIndex=index; document.getElementById('delete-confirm-text').innerText=`¿Borrar "${name}" permanentemente?`; document.getElementById('delete-confirm-btn-trigger').onclick=executeDeletion; document.getElementById('delete-confirm-modal').classList.remove('hidden'); }
-        function closeDeleteConfirmModal(){ document.getElementById('delete-confirm-modal').classList.add('hidden'); deleteTargetType=''; deleteTargetIndex=-1; }
-        function executeDeletion(){ if(deleteTargetIndex===-1||!deleteTargetType) return; if(deleteTargetType==='order'){ orders.splice(deleteTargetIndex,1); renderAdminOrdersTable(); showToast("Orden eliminada","warning"); } else if(deleteTargetType==='product'){ products.splice(deleteTargetIndex,1); renderAdminProductsGrid(); renderProducts(); showToast("Producto eliminado","warning"); } else if(deleteTargetType==='service'){ services.splice(deleteTargetIndex,1); renderAdminServicesGrid(); renderLandingServices(); showToast("Servicio eliminado","warning"); } updateStorage(); closeDeleteConfirmModal(); }
-
-        // FILTROS PRODUCTOS
-        function filterProducts(category) {
-            document.querySelectorAll('#category-filters button').forEach(btn => { btn.className = "category-btn px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700 transition-all"; });
-            let activeBtn = document.querySelector(`#category-filters button[data-cat="${category}"]`);
-            if(activeBtn) activeBtn.className = "category-btn active px-4 py-2 text-xs font-cyber font-bold rounded-lg border border-neonpurple bg-neonpurple/20 text-white transition-all";
-            renderProducts(category);
-        }
-
-        // Interacción 3D
-        const phoneContainer = document.getElementById('hero-phone-container');
-        const phone = document.getElementById('hero-phone');
-        if(phoneContainer && phone && window.innerWidth > 768) {
-            phoneContainer.addEventListener('mousemove', (e) => {
-                const rect = phoneContainer.getBoundingClientRect();
-                const x = e.clientX - rect.left, y = e.clientY - rect.top;
-                const centerX = rect.width/2, centerY = rect.height/2;
-                const rotateX = ((y - centerY) / centerY) * -12;
-                const rotateY = ((x - centerX) / centerX) * 12;
-                phone.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-            });
-            phoneContainer.addEventListener('mouseleave', () => { phone.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`; });
-        }
-
-        window.onload = () => {
-            initDatabase();
-            renderLandingServices();
-            renderProducts();
-            showToast("Sistemas cuánticos e IA integrados al 100%.", "success");
-            document.querySelectorAll('#category-filters button').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); let cat = btn.getAttribute('data-cat'); if(cat) filterProducts(cat); }));
-            document.getElementById('save-order-btn').addEventListener('click', saveOrderManually);
-            // Cerrar modales con ESC
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeProductModal();
-                    closeServiceModal();
-                }
-            });
+  </head>
+  <body class="bg-zinc-950 text-zinc-100">
+    <div id="root"></div>
+    <script type="module" src="/smm-proxy.jsx"></script>
+  </body>
+</html>
         };
     </script>
 </body>
